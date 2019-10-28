@@ -7,15 +7,14 @@
  * its position on the two-dimensional plane (x and y coordinates in meters)
  * and its speed (im meters per second).*/
 
-import java.io.BufferedReader;
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
+import java.util.regex.Pattern;
 
 
 class WorkingWithDatasets {
@@ -24,10 +23,10 @@ class WorkingWithDatasets {
     private BST tree = null;
 
     /* Constructor for class */
-    WorkingWithDatasets(String path) throws FileNotFoundException {
+    WorkingWithDatasets(String path) throws FileNotFoundException, UnsupportedEncodingException {
         FileInputStream inputStream = new FileInputStream(path);
         datasetScanner = new Scanner(inputStream);
-        randomVelocities();
+        //randomVelocities_andCutSize(10);
     }
 
     BST getDB() {
@@ -137,18 +136,29 @@ class WorkingWithDatasets {
     }
 
 
-    private void randomVelocities() throws FileNotFoundException {
+    private void randomVelocities_andCutSize(int size) throws FileNotFoundException {
         String inputLine;
         String outputLine;
+        String[] splited;
         double rand;
-        PrintWriter writer = new PrintWriter("D:/fixedVelocities.tr");
-        while(datasetScanner.hasNextLine()) {
+        long total=0;
+        PrintWriter writer = new PrintWriter("Server/fixedVelocities_" + size + "_MB.txt");
+        //PrintWriter writer = new PrintWriter("D:/fixedVelocities.txt");
+        while(datasetScanner.hasNextLine() && bytesToMeg(total) <= size) {
             rand = ThreadLocalRandom.current().nextDouble(0, 30);
             inputLine = datasetScanner.nextLine();
-            outputLine = inputLine.replaceAll("\\b15.28\\b|\\b12.5\\b",String.valueOf(rand));
+            splited = inputLine.split(" ");
+            splited[splited.length -1] =  String.format("%.2f", rand);
+            outputLine = String.join(" ", splited);
+            total += outputLine.getBytes(StandardCharsets.UTF_8).length;
             writer.println(outputLine);
         }
         writer.close();
     }
 
+    private static final long  MEGABYTE = 1024L * 1024L;
+
+    private static long bytesToMeg(long bytes) {
+        return bytes / MEGABYTE ;
+    }
 }
