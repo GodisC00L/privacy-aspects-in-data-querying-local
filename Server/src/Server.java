@@ -1,4 +1,7 @@
 import java.io.FileNotFoundException;
+import java.io.UnsupportedEncodingException;
+import java.time.Duration;
+import java.time.Instant;
 import java.util.List;
 
 public class Server {
@@ -11,7 +14,7 @@ public class Server {
             ds = new WorkingWithDatasets(path);
             db = ds.getDB();
             this.k = k;
-        } catch (FileNotFoundException e) {
+        } catch (FileNotFoundException | UnsupportedEncodingException e) {
             e.printStackTrace();
         }
     }
@@ -34,12 +37,15 @@ public class Server {
     }
 
     public static void main(String[] args) {
-        Server server = new Server("D:/SmallList.txt", 1);
+        Server server = new Server("Server/fixedVelocities_10_MB.txt", 1);
+        //Server server = new Server("D:/koln-pruned.tr", 1);
         Pair<Double, Double> range = new Pair<>(5214.0, 13700.0);
         double timestamp = 3646;
+        Instant start = Instant.now();
         double avgVel = server.getAvgVelocity(range, timestamp);
+        Instant end = Instant.now();
         System.out.println("Avg velocity for range: [" + range.getP1() + ", " + range.getP2() +"]\n"
                 + "timestamp: " + timestamp
-                + " is: " + avgVel);
+                + " is: " + avgVel + "\n" + Duration.between(start, end));
     }
 }
