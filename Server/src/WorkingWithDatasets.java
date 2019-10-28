@@ -26,7 +26,6 @@ class WorkingWithDatasets {
     WorkingWithDatasets(String path) throws FileNotFoundException, UnsupportedEncodingException {
         FileInputStream inputStream = new FileInputStream(path);
         datasetScanner = new Scanner(inputStream);
-        //randomVelocities_andCutSize(10);
     }
 
     BST getDB() {

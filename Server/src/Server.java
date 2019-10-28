@@ -12,7 +12,7 @@ public class Server {
     public Server(String path, int k) {
         try {
             ds = new WorkingWithDatasets(path);
-            //db = ds.getDB();
+            db = ds.getDB();
             this.k = k;
         } catch (FileNotFoundException | UnsupportedEncodingException e) {
             e.printStackTrace();
