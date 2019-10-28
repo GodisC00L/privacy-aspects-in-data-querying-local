@@ -34,12 +34,12 @@ public class Server {
     }
 
     public static void main(String[] args) {
-        Server server = new Server("D:/SmallList.txt", 1);
-        Pair<Double, Double> range = new Pair<>(5214.0, 13700.0);
+        Server server = new Server("D:/koln-pruned.tr", 1);
+        /*Pair<Double, Double> range = new Pair<>(5214.0, 13700.0);
         double timestamp = 3646;
         double avgVel = server.getAvgVelocity(range, timestamp);
         System.out.println("Avg velocity for range: [" + range.getP1() + ", " + range.getP2() +"]\n"
                 + "timestamp: " + timestamp
-                + " is: " + avgVel);
+                + " is: " + avgVel);*/
     }
 }

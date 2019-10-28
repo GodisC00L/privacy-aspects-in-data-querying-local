@@ -7,11 +7,15 @@
  * its position on the two-dimensional plane (x and y coordinates in meters)
  * and its speed (im meters per second).*/
 
+import java.io.BufferedReader;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.Scanner;
+import java.util.concurrent.ThreadLocalRandom;
 
 
 class WorkingWithDatasets {
@@ -23,6 +27,7 @@ class WorkingWithDatasets {
     WorkingWithDatasets(String path) throws FileNotFoundException {
         FileInputStream inputStream = new FileInputStream(path);
         datasetScanner = new Scanner(inputStream);
+        randomVelocities();
     }
 
     BST getDB() {
@@ -131,5 +136,19 @@ class WorkingWithDatasets {
         return null;
     }
 
+
+    private void randomVelocities() throws FileNotFoundException {
+        String inputLine;
+        String outputLine;
+        double rand;
+        PrintWriter writer = new PrintWriter("D:/fixedVelocities.tr");
+        while(datasetScanner.hasNextLine()) {
+            rand = ThreadLocalRandom.current().nextDouble(0, 30);
+            inputLine = datasetScanner.nextLine();
+            outputLine = inputLine.replaceAll("\\b15.28\\b|\\b12.5\\b",String.valueOf(rand));
+            writer.println(outputLine);
+        }
+        writer.close();
+    }
 
 }
