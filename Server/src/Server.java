@@ -6,11 +6,11 @@ public class Server {
     private BST db;
     private int k;
 
-    public Server(String path) {
+    public Server(String path, int k) {
         try {
             ds = new WorkingWithDatasets(path);
             db = ds.getDB();
-            k = 1;
+            this.k = k;
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
@@ -34,7 +34,7 @@ public class Server {
     }
 
     public static void main(String[] args) {
-        Server server = new Server("D:/SmallList.txt");
+        Server server = new Server("D:/SmallList.txt", 1);
         Pair<Double, Double> range = new Pair<>(5214.0, 13700.0);
         double timestamp = 3646;
         double avgVel = server.getAvgVelocity(range, timestamp);
