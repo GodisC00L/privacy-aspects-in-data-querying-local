@@ -7,7 +7,7 @@ import java.util.List;
 public class Server {
     private WorkingWithDatasets ds;
     private BST db;
-    private final int k = 4;
+    private final int k = 3;
     private final String path = "Server/fixedVelocities_10_MB.txt";
 
     public Server() {
@@ -26,7 +26,6 @@ public class Server {
     public double getAvgVelocity(Pair<Double, Double> range, double timestamp) {
         double res = -1;
         List<Double> allVelocities = ds.getVelocityInRange(timestamp, range);
-        System.out.println("List Size: " + allVelocities.size());
         if(allVelocities.size() >= this.k) {
             res = 0;
             for(Double vel : allVelocities)
