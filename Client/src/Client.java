@@ -14,7 +14,6 @@ public class Client {
         Pair<Double,Double> pair = getMinRange(srv,vTarget,vTarget,timestemp);
         xMax = pair.getP1();
         xMin = vTarget+1;
-        xMax = pair.getP1();
         pair = getMinRange(srv,xMin,xMax,timestemp);
         double xFinal = pair.getP1();
         double sAvg1 = pair.getP2();
