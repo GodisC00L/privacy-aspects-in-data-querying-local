@@ -15,4 +15,9 @@ public class Pair<T, K> {
     public K getP2() {
         return p2;
     }
+
+    public void setP1(T p1) { this.p1 = p1; }
+
+    public void setP2(K p2) { this.p2 = p2; }
+
 }

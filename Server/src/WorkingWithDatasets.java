@@ -26,7 +26,6 @@ class WorkingWithDatasets {
     WorkingWithDatasets(String path) throws FileNotFoundException, UnsupportedEncodingException {
         FileInputStream inputStream = new FileInputStream(path);
         datasetScanner = new Scanner(inputStream);
-        randomVelocities_andCutSize(20);
     }
 
     BST getDB() {
@@ -142,13 +141,8 @@ class WorkingWithDatasets {
         String[] splited;
         double rand;
         long total=0;
-        PrintWriter writer = new PrintWriter("Server/fixedVelocities_" + size + "_MB_T1.txt");
+        PrintWriter writer = new PrintWriter("Server/fixedVelocities_" + size + "_MB.txt");
         //PrintWriter writer = new PrintWriter("D:/fixedVelocities.txt");
-        int toCut = 19700000;
-        while(datasetScanner.hasNextLine() && total <= toCut){
-            total += datasetScanner.nextLine().length();
-        }
-        total = 0;
         while(datasetScanner.hasNextLine() && bytesToMeg(total) <= size) {
             rand = ThreadLocalRandom.current().nextDouble(0, 30);
             inputLine = datasetScanner.nextLine();
