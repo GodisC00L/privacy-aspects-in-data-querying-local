@@ -8,8 +8,8 @@ public class Server {
     private WorkingWithDatasets ds;
     private Database db;
     public final int k = 3;
-    //private final String path = "Server/fixedVelocities_20_MB_T1.txt";
-    private final String path = "Server/t1.txt";
+    private final String path = "Server/fixedVelocities_20_MB_T1.txt";
+    //private final String path = "Server/t1.txt";
 
     public Server() {
         try {
@@ -17,7 +17,7 @@ public class Server {
             db = ds.getDB();
             System.out.println("DB created Successfully\nK value is: " + k
                     + "\nMax X: " + db.getMax_X() + "\nMin X: " + db.getMin_X());
-        } catch (FileNotFoundException | UnsupportedEncodingException e) {
+        } catch (FileNotFoundException e) {
             System.out.println("Error on creating DB");
             e.printStackTrace();
         }

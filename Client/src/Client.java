@@ -73,10 +73,15 @@ public class Client {
         DecimalFormat df2 = new DecimalFormat("#.##");
         Server srv = new Server();
         while (true) {
-            System.out.println("Enter target and timestamp");
+            System.out.println("Enter target and timestamp, -1 for exit");
             Scanner input = new Scanner(System.in);
 
-            double vTarget = input.nextDouble(), timestemp = input.nextDouble();
+            double vTarget = input.nextDouble();
+            if (vTarget == -1){
+                System.out.println("Exiting...");
+                break;
+            }
+            double timestemp = input.nextDouble();
             System.out.println("Start Attacking " + vTarget);
             long startTime = System.nanoTime();
             double sTarget = AttackForward(srv, vTarget, timestemp);
