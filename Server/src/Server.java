@@ -7,8 +7,8 @@ import java.util.List;
 public class Server {
     private WorkingWithDatasets ds;
     private BST db;
-    private final int k = 4;
-    private final String path = "Server/fixedVelocities_10_MB.txt";
+    public final int k = 3;
+    private final String path = "Server/fixedVelocities_20_MB_T1.txt";
 
     public Server() {
         try {
@@ -26,7 +26,6 @@ public class Server {
     public double getAvgVelocity(Pair<Double, Double> range, double timestamp) {
         double res = -1;
         List<Double> allVelocities = ds.getVelocityInRange(timestamp, range);
-        System.out.println("List Size: " + allVelocities.size());
         if(allVelocities.size() >= this.k) {
             res = 0;
             for(Double vel : allVelocities)
@@ -36,7 +35,7 @@ public class Server {
         return res;
     }
 
-    public static void main(String[] args) {
+    /*public static void main(String[] args) {
         Server server = new Server();
         Pair<Double, Double> range = new Pair<>(5214.0, 13700.0);
         double timestamp = 3646;
@@ -46,5 +45,5 @@ public class Server {
         System.out.println("Avg velocity for range: [" + range.getP1() + ", " + range.getP2() +"]\n"
                 + "timestamp: " + timestamp
                 + " is: " + avgVel + "\n" + Duration.between(start, end));
-    }
+    }*/
 }
