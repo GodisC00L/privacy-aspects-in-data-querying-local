@@ -1,29 +1,27 @@
-public class BST<T> {
-    private Node<T> root;
+class BST {
+    private Node root;
 
-    public BST() {
-        this.root = null;
+    BST(double key, double velocity) {
+        this.root = addNodeRec(null, key, velocity);
     }
 
-    public Node<T> getRoot() {
+    Node getRoot() {
         return root;
     }
 
-    private Node<T> addNodeRec(Node<T> current, double key, double timestamp, T values) {
+    private Node addNodeRec(Node current, double key, double velocity) {
         if(current == null) {
-            return new Node<T>(key, timestamp, values);
+            return new Node(key, velocity);
         }
         if(key < current.getKey()) {
-            current.setLeft(addNodeRec(current.getLeft(), key, timestamp, values));
+            current.setLeft(addNodeRec(current.getLeft(), key, velocity));
         } else if (key > current.getKey()) {
-            current.setRight(addNodeRec(current.getRight(), key, timestamp, values));
-        } else {
-            current.addValue(timestamp, values);
+            current.setRight(addNodeRec(current.getRight(), key, velocity));
         }
         return current;
     }
 
-    public void add(double key, double timestamp, T values) {
-        root = addNodeRec(root, key, timestamp, values);
+    void add(double key, double velocity) {
+        root = addNodeRec(root, key, velocity);
     }
 }
