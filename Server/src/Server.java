@@ -14,11 +14,16 @@ public class Server {
     public Server() {
         try {
             ds = new WorkingWithDatasets(path);
+            long startTime = System.nanoTime();
             db = ds.getDB();
-            System.out.println("DB created Successfully\nK value is: " + k
-                    + "\nMax X: " + db.getMax_X() + "\nMin X: " + db.getMin_X());
+            double dbBuildTime = (System.nanoTime() - startTime) / 1e9;
+            System.out.println("================================" +
+                    "\nDB created Successfully!\nK value is: " + k
+                    + "\nMax X: " + db.getMax_X() + "\nMin X: " + db.getMin_X()
+                    + "\nBuild time: " + dbBuildTime + "[sec]\n"
+                    + "================================\n");
         } catch (FileNotFoundException e) {
-            System.out.println("Error on creating DB");
+            System.out.println("Error on creating DB, Bad file path!");
             e.printStackTrace();
         }
     }
