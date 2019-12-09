@@ -7,19 +7,21 @@ import java.util.List;
 public class Server {
     private WorkingWithDatasets ds;
     private Database db;
-    public final int k = 3;
+    private final String targetListPath = "Server/fixedVelocities_20_MB_T1_target.csv";
+
     private final String path = "Server/fixedVelocities_20_MB_T1.txt";
+    public int k = 1;
     //private final String path = "Server/t1.txt";
 
     public Server() {
         try {
-            ds = new WorkingWithDatasets(path);
+            ds = new WorkingWithDatasets(path, targetListPath);
             long startTime = System.nanoTime();
             db = ds.getDB();
             double dbBuildTime = (System.nanoTime() - startTime) / 1e9;
             System.out.println("================================" +
                     "\nDB created Successfully!\nK value is: " + k
-                    + "\nMax X: " + db.getMax_X() + "\nMin X: " + db.getMin_X()
+                    + "\nMin X: " + db.getMin_X() + "\nMax X: " + db.getMax_X()
                     + "\nBuild time: " + dbBuildTime + "[sec]\n"
                     + "================================\n");
         } catch (FileNotFoundException e) {
@@ -44,5 +46,9 @@ public class Server {
             result /= allVelocities.size();
         }
         return result;
+    }
+
+    public void setK(int k) {
+        this.k = k;
     }
 }

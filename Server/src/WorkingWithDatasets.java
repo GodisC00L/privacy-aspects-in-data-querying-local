@@ -21,10 +21,13 @@ class WorkingWithDatasets {
 
     private Scanner datasetScanner;
     private Database db = new Database();
+    private PrintWriter targetList = null;
 
     /* Constructor for class */
-    WorkingWithDatasets(String path) throws FileNotFoundException {
+    WorkingWithDatasets(String path, String targetPath) throws FileNotFoundException {
         FileInputStream inputStream = new FileInputStream(path);
+        if(!(new File(targetPath).exists()))
+            targetList = new PrintWriter(targetPath);
         datasetScanner = new Scanner(inputStream);
     }
 
@@ -61,6 +64,12 @@ class WorkingWithDatasets {
     private Database createDB() {
         String[] splitted;
         DataFormat df;
+        // Prepare file for writing
+        if(targetList != null) {
+            String sb = "Timestamp,X,Y,Velocity,Attack Time for K: ," +
+                    "1,10,20,30,40,50,60,70,80,90,100" + "\n";
+            targetList.write(sb);
+        }
         while(datasetScanner.hasNextLine()) {
             splitted = datasetScanner.nextLine().split(" ");
             df = new DataFormat(Double.parseDouble(splitted[0]),
@@ -70,12 +79,18 @@ class WorkingWithDatasets {
                     Double.parseDouble(splitted[4])
             );
             db.addToDB(df.x, df.velocity, df.timestamp);
+            if(targetList != null)
+                writeToTargetList(df);
         }
         datasetScanner.close();
+        if(targetList != null)
+            targetList.close();
         return db;
     }
 
-
+    private void writeToTargetList(DataFormat df){
+        targetList.write((df.timestamp + "," + df.x + "," + df.y + "\n"));
+    }
 
 
     private void randomVelocities_andCutSize(int size) throws FileNotFoundException {
