@@ -19,7 +19,7 @@ public class Server {
             double dbBuildTime = (System.nanoTime() - startTime) / 1e9;
             System.out.println("================================" +
                     "\nDB created Successfully!\nK value is: " + k
-                    + "\nMax X: " + db.getMax_X() + "\nMin X: " + db.getMin_X()
+                    + "\nMin X: " + db.getMin_X() + "\nMax X: " + db.getMax_X()
                     + "\nBuild time: " + dbBuildTime + "[sec]\n"
                     + "================================\n");
         } catch (FileNotFoundException e) {
@@ -32,7 +32,7 @@ public class Server {
         return db;
     }
 
-    public double getAvgVelocity(Pair<Double, Double> range, double timestamp) {
+    /*public double getAvgVelocity(Pair<Double, Double> range, double timestamp) {
         double result = -1;
         if(range.getP1() < db.getMin_X() || range.getP2() > db.getMax_X())
             return result;
@@ -44,5 +44,9 @@ public class Server {
             result /= allVelocities.size();
         }
         return result;
+    }*/
+
+    public static void main(String[] args) {
+        Server server = new Server();
     }
 }

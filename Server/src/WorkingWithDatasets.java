@@ -69,7 +69,7 @@ class WorkingWithDatasets {
                     Double.parseDouble(splitted[3]),
                     Double.parseDouble(splitted[4])
             );
-            db.addToDB(df.x, df.velocity, df.timestamp);
+            db.addToDB(df.x, df.y, df.velocity, df.timestamp);
         }
         datasetScanner.close();
         return db;

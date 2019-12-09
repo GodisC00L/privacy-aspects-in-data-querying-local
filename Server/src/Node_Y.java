@@ -1,17 +1,14 @@
-/* Generic node class */
+/* Node Class for Y axis */
 
-import java.util.ArrayList;
-import java.util.LinkedHashMap;
 import java.util.List;
-import java.util.Map;
 
-class Node {
+class Node_Y {
     private double key;
     private double velocity;
-    private Node right;
-    private Node left;
+    private Node_Y right;
+    private Node_Y left;
 
-    Node(double key, double velocity) {
+    Node_Y(double key, double velocity) {
         this.key = key;
         this.velocity = velocity;
         this.right = null;
@@ -22,23 +19,23 @@ class Node {
         return key;
     }
 
-    Node getRight() {
+    Node_Y getRight() {
         return right;
     }
 
-    Node getLeft() {
-        return left;
+    void setRight(Node_Y right) {
+        this.right = right;
     }
 
     double getVelocity() {
         return velocity;
     }
 
-    void setRight(Node right) {
-        this.right = right;
+    Node_Y getLeft() {
+        return left;
     }
 
-    void setLeft(Node left) {
+    void setLeft(Node_Y left) {
         this.left = left;
     }
 
