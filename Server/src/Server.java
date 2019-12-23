@@ -10,7 +10,7 @@ public class Server {
     private final String targetListPath = "Server/fixedVelocities_20_MB_T1_target.csv";
 
     private final String path = "Server/fixedVelocities_20_MB_T1.txt";
-    public int k = 1;
+    public int k = 10;
     //private final String path = "Server/t1.txt";
 
     public Server() {

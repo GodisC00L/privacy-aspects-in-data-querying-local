@@ -66,8 +66,8 @@ class WorkingWithDatasets {
         DataFormat df;
         // Prepare file for writing
         if(targetList != null) {
-            String sb = "Timestamp,X,Y,Velocity,Attack Time for K: ," +
-                    "1,10,20,30,40,50,60,70,80,90,100" + "\n";
+            String sb = "Timestamp,X,Y,Velocity,Attack Time for K: [ms]," +
+                    "1,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200" + "\n";
             targetList.write(sb);
         }
         while(datasetScanner.hasNextLine()) {
