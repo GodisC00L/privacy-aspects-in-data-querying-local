@@ -6,44 +6,49 @@ import java.util.List;
 
 public class Server {
     private WorkingWithDatasets ds;
-    private BST db;
-    public final int k = 3;
+    private Database db;
+    private final String targetListPath = "Server/fixedVelocities_20_MB_T1_target.csv";
+
     private final String path = "Server/fixedVelocities_20_MB_T1.txt";
+    public int k = 10;
+    //private final String path = "Server/t1.txt";
 
     public Server() {
         try {
-            ds = new WorkingWithDatasets(path);
+            ds = new WorkingWithDatasets(path, targetListPath);
+            long startTime = System.nanoTime();
             db = ds.getDB();
-        } catch (FileNotFoundException | UnsupportedEncodingException e) {
+            double dbBuildTime = (System.nanoTime() - startTime) / 1e9;
+            System.out.println("================================" +
+                    "\nDB created Successfully!\nK value is: " + k
+                    + "\nMin X: " + db.getMin_X() + "\nMax X: " + db.getMax_X()
+                    + "\nBuild time: " + dbBuildTime + "[sec]\n"
+                    + "================================\n");
+        } catch (FileNotFoundException e) {
+            System.out.println("Error on creating DB, Bad file path!");
             e.printStackTrace();
         }
     }
 
-    public BST getDb() {
+    public Database getDb() {
         return db;
     }
 
     public double getAvgVelocity(Pair<Double, Double> range, double timestamp) {
-        double res = -1;
-        List<Double> allVelocities = ds.getVelocityInRange(timestamp, range);
+        double result = -1;
+        if(range.getP1() < db.getMin_X() || range.getP2() > db.getMax_X())
+            return result;
+        List<Double> allVelocities = db.getVelocityInRange(timestamp, range);
         if(allVelocities.size() >= this.k) {
-            res = 0;
+            result = 0;
             for(Double vel : allVelocities)
-                res += vel;
-            res /= allVelocities.size();
+                result += vel;
+            result /= allVelocities.size();
         }
-        return res;
+        return result;
     }
 
-    /*public static void main(String[] args) {
-        Server server = new Server();
-        Pair<Double, Double> range = new Pair<>(5214.0, 13700.0);
-        double timestamp = 3646;
-        Instant start = Instant.now();
-        double avgVel = server.getAvgVelocity(range, timestamp);
-        Instant end = Instant.now();
-        System.out.println("Avg velocity for range: [" + range.getP1() + ", " + range.getP2() +"]\n"
-                + "timestamp: " + timestamp
-                + " is: " + avgVel + "\n" + Duration.between(start, end));
-    }*/
+    public void setK(int k) {
+        this.k = k;
+    }
 }

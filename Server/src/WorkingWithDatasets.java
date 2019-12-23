@@ -20,18 +20,21 @@ import java.util.regex.Pattern;
 class WorkingWithDatasets {
 
     private Scanner datasetScanner;
-    private BST tree = null;
+    private Database db = new Database();
+    private PrintWriter targetList = null;
 
     /* Constructor for class */
-    WorkingWithDatasets(String path) throws FileNotFoundException, UnsupportedEncodingException {
+    WorkingWithDatasets(String path, String targetPath) throws FileNotFoundException {
         FileInputStream inputStream = new FileInputStream(path);
+        if(!(new File(targetPath).exists()))
+            targetList = new PrintWriter(targetPath);
         datasetScanner = new Scanner(inputStream);
     }
 
-    BST getDB() {
-        if (tree == null)
-            this.tree = createDB();
-        return tree;
+    Database getDB() {
+        if (this.db.getDb().isEmpty())
+            this.db = createDB();
+        return db;
     }
 
     private class DataFormat  {
@@ -58,11 +61,15 @@ class WorkingWithDatasets {
         }
     }
 
-    private BST createDB() {
-        BST<Pair> tree = new BST<>();
+    private Database createDB() {
         String[] splitted;
         DataFormat df;
-        Pair pair;
+        // Prepare file for writing
+        if(targetList != null) {
+            String sb = "Timestamp,X,Y,Velocity,Attack Time for K: [ms]," +
+                    "1,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200" + "\n";
+            targetList.write(sb);
+        }
         while(datasetScanner.hasNextLine()) {
             splitted = datasetScanner.nextLine().split(" ");
             df = new DataFormat(Double.parseDouble(splitted[0]),
@@ -71,67 +78,18 @@ class WorkingWithDatasets {
                     Double.parseDouble(splitted[3]),
                     Double.parseDouble(splitted[4])
             );
-            pair = new Pair(df.timestamp, df.velocity);
-            tree.add(df.x, df.timestamp, pair);
+            db.addToDB(df.x, df.velocity, df.timestamp);
+            if(targetList != null)
+                writeToTargetList(df);
         }
         datasetScanner.close();
-        return tree;
+        if(targetList != null)
+            targetList.close();
+        return db;
     }
 
-    public List<Double> getVelocityInRange(double timestamp, Pair<Double, Double> range) {
-        List<Double> velociyList = new ArrayList<>();
-        double uppperBound = range.getP2(), lowerBound = range.getP1();
-        Node splitNode = findSplitNode(getDB().getRoot(), lowerBound, uppperBound);
-
-        if(splitNode != null) {
-            /* In case this is the only node in the range */
-            splitNode.getValuesForTimestamp(timestamp, velociyList);
-            Node currentNode  = splitNode.getLeft();
-            /* Left subtree, path to lower bound */
-            while(currentNode != null && !currentNode.isLeaf()) {
-                if(lowerBound <= currentNode.getKey()) {
-                    currentNode.getValuesForTimestamp(timestamp, velociyList);
-                    if(currentNode.getRight() != null)
-                        currentNode.getRight().getValuesForSubtree(timestamp, velociyList);
-                    currentNode = currentNode.getLeft();
-                } else {
-                    currentNode = currentNode.getRight();
-                }
-            }
-            if(currentNode != null && currentNode.getKey() >= lowerBound)
-                currentNode.getValuesForTimestamp(timestamp, velociyList);
-
-            /* Right subtree, path to upper bound */
-            currentNode = splitNode.getRight();
-            while(currentNode != null && !currentNode.isLeaf()) {
-                if (currentNode.getKey() <= uppperBound) {
-                    currentNode.getValuesForTimestamp(timestamp, velociyList);
-                    if(currentNode.getLeft() != null)
-                        currentNode.getLeft().getValuesForSubtree(timestamp, velociyList);
-                    currentNode = currentNode.getRight();
-                } else {
-                    currentNode = currentNode.getLeft();
-                }
-            }
-            if(currentNode != null && currentNode.getKey() <= uppperBound)
-                currentNode.getValuesForTimestamp(timestamp, velociyList);
-            return velociyList;
-        }
-        return null;
-    }
-
-    private Node findSplitNode(Node root, double lowerBound, double upperBound) {
-        if (root != null) {
-            Node currentNode = root;
-            while (!currentNode.isLeaf() && (currentNode.getKey() > upperBound || currentNode.getKey() < lowerBound)) {
-                if (currentNode.getKey() > upperBound)
-                    currentNode = currentNode.getLeft();
-                else
-                    currentNode = currentNode.getRight();
-            }
-            return currentNode;
-        }
-        return null;
+    private void writeToTargetList(DataFormat df){
+        targetList.write((df.timestamp + "," + df.x + "," + df.y + "\n"));
     }
 
 
