@@ -4,25 +4,38 @@ import java.util.Scanner;
 
 public class Client {
 
-    private static final int FORWARD = 1;
-    private static final int BACKWARD = 2;
+    private static final int FORWARD    = 1;
+    private static final int BACKWARD   = 2;
 
     private static boolean isInRange(Pair<Double, Double> range, Server srv){
         return  (range.getP1() >= srv.getDb().getMin_X() && range.getP2() <= srv.getDb().getMax_X());
     }
 
-    private static Pair<Double,Double> getMinRangeForward(Server srv, double xMin, double xMax, double timestamp){
+    private static Pair<Double,Double> getMinRange(Server srv, double xMin, double xMax, double timestamp, int direction){
         Pair<Double, Double> pair = new Pair<>(xMin,xMax);
         double sAvg = -1;
-        while (isInRange(pair, srv) && ((sAvg = srv.getAvgVelocity(pair, timestamp)) == -1))
-            pair.setP2(pair.getP2() + 1);
+        while (isInRange(pair, srv) && ((sAvg = srv.getAvgVelocity(pair, timestamp)) == -1)) {
+            if(direction == FORWARD)
+                pair.setP2(pair.getP2() + 1);
+            else if (direction == BACKWARD)
+                pair.setP1(pair.getP1() - 1);
+        }
         // Check if there is a tighter range
         if(sAvg != -1 && srv.k != 1) {
-            pair.setP2(pair.getP2() - 1);
-            while (isInRange(pair, srv) &&((sAvg = srv.getAvgVelocity(pair, timestamp)) == -1))
-                pair.setP2(pair.getP2() + 0.1);
+            if(direction == FORWARD) {
+                pair.setP2(pair.getP2() - 1);
+                while (isInRange(pair, srv) && ((sAvg = srv.getAvgVelocity(pair, timestamp)) == -1))
+                    pair.setP2(pair.getP2() + 0.1);
+            }
+            else if (direction == BACKWARD) {
+                pair.setP1(pair.getP1() + 1);
+                while (isInRange(pair, srv) &&((sAvg = srv.getAvgVelocity(pair, timestamp)) == -1))
+                    pair.setP1(pair.getP1() - 0.1);
+            }
         }
-        return new Pair<>(pair.getP2(),sAvg);
+        if(direction == FORWARD)
+            return new Pair<>(pair.getP2(), sAvg);
+        return new Pair<>(pair.getP1(), sAvg);
     }
 
     private static double Attack(Server srv, double vTarget, double timestamp, int direction){
@@ -30,9 +43,9 @@ public class Client {
         double xMin, xMax;
         Pair<Double, Double> pair;
         if(direction == FORWARD) {
-            pair = getMinRangeForward(srv, vTarget, vTarget, timestamp);
+            pair = getMinRange(srv, vTarget, vTarget, timestamp, direction);
         } else {
-            pair = getMinRangeBackwards(srv,vTarget,vTarget,timestamp);
+            pair = getMinRange(srv ,vTarget, vTarget, timestamp, direction);
         }
         // In case out of bounds
         if (pair.getP2() == -1)
@@ -42,11 +55,11 @@ public class Client {
         if(direction == FORWARD) {
             xMax = pair.getP1();
             xMin = vTarget + 0.1;
-            pair = getMinRangeForward(srv, xMin, xMax, timestamp);
+            pair = getMinRange(srv, xMin, xMax, timestamp, direction);
         } else {
             xMax = vTarget - 0.1;
             xMin = pair.getP1();
-            pair = getMinRangeBackwards(srv,xMin,xMax,timestamp);
+            pair = getMinRange(srv, xMin, xMax, timestamp, direction);
         }
         // In case out of bounds
         if (pair.getP2() == -1)
@@ -65,28 +78,14 @@ public class Client {
         return (k+1)*sAvg2 - k*sAvg1;
     }
 
-    private static Pair<Double,Double> getMinRangeBackwards(Server srv, double xMin, double xMax, double timestamp){
-        Pair<Double, Double> pair = new Pair<>(xMin,xMax);
-        double sAvg = -1;
-        while (isInRange(pair, srv) && ((sAvg = srv.getAvgVelocity(pair, timestamp)) == -1))
-            pair.setP1(pair.getP1() - 1);
-        // Check if there is a tighter range
-        if(sAvg != -1 && srv.k != 1) {
-            pair.setP1(pair.getP1() + 1);
-            while (isInRange(pair, srv) &&((sAvg = srv.getAvgVelocity(pair, timestamp)) == -1))
-                pair.setP1(pair.getP1() - 0.1);
-        }
-        return new Pair<>(pair.getP1(),sAvg);
-    }
-
     private static void attackAllTargets(Server srv, int numOfTests, PrintWriter logFile) throws FileNotFoundException {
-        String targetListPath = "Client/fixedVelocities_20_MB_T1_target.csv";
+        String targetListPath = "Client/fixedVelocities_10_MB_target.csv";
         FileInputStream inputStream = new FileInputStream(targetListPath);
-        String attackedList = "Client/fixedVelocities_20_MB_T1_target_attacked.csv";
+        String attackedList = "Client/fixedVelocities_10_MB_target_attacked.csv";
         PrintWriter attackedFile = new PrintWriter(attackedList);
         Scanner scanner = new Scanner(inputStream);
         String[] splitted;
-        Boolean failFlag = false;
+        boolean failFlag;
 
         // First line of headlines
         attackedFile.write(scanner.nextLine() + "\n");
@@ -142,7 +141,7 @@ public class Client {
 
 
         try {
-            PrintWriter logFile = new PrintWriter("Client/fixedVelocities_20_MB_T1_target_attacked.log");
+            PrintWriter logFile = new PrintWriter("Client/fixedVelocities_10_MB_target_attacked.log");
             long startTime = System.nanoTime();
             attackAllTargets(srv, 1000, logFile);
             double attackTime = (System.nanoTime() - startTime) / 1e9;
