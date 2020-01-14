@@ -8,6 +8,9 @@ public class Pair<T, K> {
         this.p2 = p2;
     }
 
+    public Pair() {
+    }
+
     public T getP1() {
         return p1;
     }

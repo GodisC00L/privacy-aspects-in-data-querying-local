@@ -1,9 +1,12 @@
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 
 class Database {
     private HashMap<Double, DataArr> db;
+
 
     /* ============================================ */
     //private HashMap<Double, BST> db;
@@ -37,69 +40,30 @@ class Database {
         return db;
     }
 
-    List<Double> getVelocityInRange(double timestamp, Pair<Double, Double> range) {
-        List<Double> velociyList = new ArrayList<>();
-        double upperBound = range.getP2(), lowerBound = range.getP1();
-        return null;
-        /*BST relaventTree = db.get(timestamp);
-        if(relaventTree == null) {
-            System.out.println("No such timestamp in DB");
+    Pair<Double, Double> getVelocityInRange(double timestamp, Pair<Double, Double> range) {
+        Pair<Double, Double> returnPair = new Pair<>();
+        //double upperBound = range.getP2(), lowerBound = range.getP1();
+        DataArr relaventArr = db.get(timestamp);
+
+        if (relaventArr == null) {
+            System.out.println("No arr for timestamp: " + timestamp + " range: " + range.toString());
             return null;
         }
 
-        Node splitNode = findSplitNode(relaventTree.getRoot(), lowerBound, upperBound);
-
-        if(splitNode != null) {
-            *//* In case this is the only node in the range *//*
-            velociyList.add(splitNode.getVelocity());
-            Node currentNode  = splitNode.getLeft();
-            *//* Left subtree, path to lower bound *//*
-            while(currentNode != null && !currentNode.isLeaf()) {
-                if(lowerBound <= currentNode.getKey()) {
-                    velociyList.add(currentNode.getVelocity());
-                    if(currentNode.getRight() != null)
-                        currentNode.getRight().getValuesForSubtree(velociyList);
-                    currentNode = currentNode.getLeft();
-                } else {
-                    currentNode = currentNode.getRight();
-                }
-            }
-            if(currentNode != null && currentNode.getKey() >= lowerBound)
-                velociyList.add(currentNode.getVelocity());
-
-            *//* Right subtree, path to upper bound *//*
-            currentNode = splitNode.getRight();
-            while(currentNode != null && !currentNode.isLeaf()) {
-                if (currentNode.getKey() <= upperBound) {
-                    velociyList.add(currentNode.getVelocity());
-                    if(currentNode.getLeft() != null)
-                        currentNode.getLeft().getValuesForSubtree(velociyList);
-                    currentNode = currentNode.getRight();
-                } else {
-                    currentNode = currentNode.getLeft();
-                }
-            }
-            if(currentNode != null && currentNode.getKey() <= upperBound)
-                velociyList.add(currentNode.getVelocity());
-            return velociyList;
+        int lowerBoundIndex = relaventArr.indexOfX(range.getP1());
+        if (lowerBoundIndex == -1) {
+            System.out.println("No index for lowerBound: " + range.getP1());
+            return null;
         }
-        return null;*/
-    }
 
-    private Node findSplitNode(Node root, double lowerBound, double upperBound) {
-        if (root != null) {
-            Node currentNode = root;
-            while (!currentNode.isLeaf() && (currentNode.getKey() > upperBound || currentNode.getKey() < lowerBound)) {
-                if (currentNode.getKey() > upperBound)
-                    currentNode = currentNode.getLeft();
-                else
-                    currentNode = currentNode.getRight();
-                if (currentNode == null)
-                    return null;
-            }
-            return currentNode;
+        int upperBoundIndex = relaventArr.indexOfX(range.getP2());
+        if (upperBoundIndex == -1) {
+            System.out.println("No index for upperBound: " + range.getP2());
+            return null;
         }
-        return null;
-    }
 
+        double k = upperBoundIndex - lowerBoundIndex;
+        double avgVelocity = (relaventArr.get(upperBoundIndex).sumToIndex - relaventArr.get(lowerBoundIndex).sumToIndex) / k;
+        return new Pair<>(k, avgVelocity);
+    }
 }
