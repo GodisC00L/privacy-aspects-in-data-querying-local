@@ -6,6 +6,8 @@ public class Client {
 
     private static final int FORWARD    = 1;
     private static final int BACKWARD   = 2;
+    private static double knownMaxX = -1;
+    private static double knownMinX = -1;
 
     private static boolean isInRange(Pair<Double, Double> range, Server srv){
         return  (range.getP1() >= srv.getDb().getMin_X() && range.getP2() <= srv.getDb().getMax_X());
@@ -42,25 +44,38 @@ public class Client {
         int k = srv.k;
         double xMin, xMax;
         Pair<Double, Double> pair;
-        if(direction == FORWARD) {
-            pair = getMinRange(srv, vTarget, vTarget, timestamp, direction);
-        } else {
-            pair = getMinRange(srv ,vTarget, vTarget, timestamp, direction);
-        }
-        // In case out of bounds
-        if (pair.getP2() == -1)
-            return -1;
         if(k == 1)
-            return pair.getP2();
+            return srv.getAvgVelocity(new Pair<>(vTarget, vTarget),timestamp);
+        if(knownMaxX == -1) {
+            knownMaxX = vTarget;
+            knownMinX = vTarget;
+        }
+        if(direction == FORWARD) {
+            // If we cant get for the Max range there is no point to check in incrementally
+            if(srv.getAvgVelocity(new Pair<>(vTarget, srv.getDb().getMax_X()), timestamp) < 0) {
+                return -1;
+            }
+            pair = getMinRange(srv, vTarget, knownMaxX, timestamp, direction);
+        } else {
+            // If we cant get for the Min range there is no point to check in incrementally
+            if(srv.getAvgVelocity(new Pair<>(srv.getDb().getMin_X(), vTarget), timestamp) < 0) {
+                return -1;
+            }
+            pair = getMinRange(srv, knownMinX, vTarget, timestamp, direction);
+        }
+
+        // In case out of bounds
+        if (pair.getP2() == -1) {
+            return -1;
+        }
         if(direction == FORWARD) {
             xMax = pair.getP1();
-            xMin = vTarget + 0.1;
-            pair = getMinRange(srv, xMin, xMax, timestamp, direction);
+            xMin = vTarget + 0.001;
         } else {
-            xMax = vTarget - 0.1;
+            xMax = vTarget - 0.001;
             xMin = pair.getP1();
-            pair = getMinRange(srv, xMin, xMax, timestamp, direction);
         }
+        pair = getMinRange(srv, xMin, xMax, timestamp, direction);
         // In case out of bounds
         if (pair.getP2() == -1)
             return -1;
@@ -70,18 +85,20 @@ public class Client {
         if (direction == FORWARD) {
             pair.setP1(vTarget);
             pair.setP2(xFinal);
+            knownMaxX = xFinal;
         } else {
             pair.setP1(xFinal);
             pair.setP2(vTarget);
+            knownMinX = xFinal;
         }
         double sAvg2 = srv.getAvgVelocity(pair,timestamp);
         return (k+1)*sAvg2 - k*sAvg1;
     }
 
-    private static void attackAllTargets(Server srv, int numOfTests, PrintWriter logFile) throws FileNotFoundException {
-        String targetListPath = "Client/fixedVelocities_10_MB_target.csv";
+    private static void attackAllTargets(Server srv, int numOfTests, PrintWriter logFile, int numOfKTest) throws FileNotFoundException {
+        String targetListPath = "Client/target.csv";
         FileInputStream inputStream = new FileInputStream(targetListPath);
-        String attackedList = "Client/fixedVelocities_10_MB_target_attacked.csv";
+        String attackedList = "Client/target_attacked.csv";
         PrintWriter attackedFile = new PrintWriter(attackedList);
         Scanner scanner = new Scanner(inputStream);
         String[] splitted;
@@ -92,33 +109,35 @@ public class Client {
 
         double xTarget, timestamp, yTarget, velocity;
         int test = 0;
-        while(scanner.hasNextLine()) {
+        while(scanner.hasNextLine() && test != numOfTests) {
             failFlag = false;
             StringBuilder timeString = new StringBuilder();
-            velocity = 0;
+            velocity = -1;
             splitted = scanner.nextLine().split(",");
             timestamp = Double.parseDouble(splitted[0]);
             xTarget = Double.parseDouble(splitted[1]);
             yTarget = Double.parseDouble(splitted[2]);
-            for(int i = 0, j = 1; i < 21 && !failFlag; i++, j+=10) {
+
+            // reset known xTarget
+            knownMinX = -1;
+            knownMaxX = -1;
+            for(int i = 0, j = 1; i < numOfKTest && !failFlag; i++, j<<=1) {
                 double ans;
                 srv.setK(j);
-                if(j == 1)
-                    j = 0;
                 long startTime = System.nanoTime();
                 ans = Attack(srv, xTarget, timestamp,FORWARD);
-                if(ans == -1){
+                if(ans == -1) {
                     ans = Attack(srv, xTarget, timestamp,BACKWARD);
                 }
                 if (ans != -1)
                     timeString.append((System.nanoTime() - startTime) / 1e6).append(",");
                 else {
-                    for(;i < 21; i++)
-                        timeString.append("failed").append(",");
+                    for(;i < numOfKTest; i++)
+                        timeString.append("NaN").append(",");
                     failFlag = true;
                 }
                 ans = Math.round(ans * 100.0) / 100.0;
-                if(velocity == 0 || velocity == -1)
+                if(velocity == -1)
                     velocity = ans;
                 if(velocity != ans && ans != -1)
                     logFile.write("Failed test for k = " + j +", timestamp: "
@@ -128,31 +147,72 @@ public class Client {
             attackedFile.write(timestamp + "," + xTarget + ","
                                 + yTarget + "," + velocity + ",," + timeString + "\n");
             test++;
-            if (test == numOfTests)
-                break;
+            int precent = (test * 100) / numOfTests;
+            printProgBar(precent);
         }
         scanner.close();
         attackedFile.close();
     }
 
-    public static void main(String[] args) {
-        DecimalFormat df2 = new DecimalFormat("#.##");
+    public static void printProgBar(int percent){
+        StringBuilder bar = new StringBuilder("[");
+
+        for(int i = 0; i < 50; i++){
+            if( i < (percent/2)){
+                bar.append("=");
+            } else if( i == (percent/2)) {
+                bar.append(">");
+            } else {
+                bar.append(" ");
+            }
+        }
+
+        bar.append("]   " + percent + "%     ");
+        System.out.print("\r" + bar.toString());
+    }
+
+    public static void runAttack() {
+        runAttack(1000);
+    }
+    public static void runAttack(int numOfTests) {
+        //DecimalFormat df2 = new DecimalFormat("#.##");
         Server srv = new Server();
 
 
+
         try {
-            PrintWriter logFile = new PrintWriter("Client/fixedVelocities_10_MB_target_attacked.log");
+            PrintWriter logFile = new PrintWriter("Client/Target.log");
             long startTime = System.nanoTime();
-            attackAllTargets(srv, 1000, logFile);
+            attackAllTargets(srv, numOfTests, logFile, 13);
             double attackTime = (System.nanoTime() - startTime) / 1e9;
             logFile.write("\nTotal attack time is: " + attackTime + "[sec]");
-            System.out.println("Total attack time is: " + attackTime + "[sec]");
+            System.out.println("\nTotal attack time is: " + attackTime + "[sec]");
+            logFile.close();
+        } catch (FileNotFoundException e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void main(String[] args) {
+        runAttack(1000);
+        /*DecimalFormat df2 = new DecimalFormat("#.##");
+        Server srv = new Server();
+
+
+
+        try {
+            PrintWriter logFile = new PrintWriter("Client/Target.log");
+            long startTime = System.nanoTime();
+            attackAllTargets(srv, 100000, logFile, 13);
+            double attackTime = (System.nanoTime() - startTime) / 1e9;
+            logFile.write("\nTotal attack time is: " + attackTime + "[sec]");
+            System.out.println("\nTotal attack time is: " + attackTime + "[sec]");
             logFile.close();
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
 
-        /*while (true) {
+       /* while (true) {
             System.out.println("Enter target and timestamp, -1 for exit");
             Scanner input = new Scanner(System.in);
 
