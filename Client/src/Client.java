@@ -3,11 +3,17 @@ import java.text.DecimalFormat;
 import java.util.Scanner;
 
 public class Client {
+    private static final int FULL_CLIENT_ATTACK     = 1;
+    private static final int SINGLE_CLIENT_ATTACK   = 2;
+    private static final int EXIT                   = -1;
+
 
     private static final int FORWARD    = 1;
     private static final int BACKWARD   = 2;
     private static double knownMaxX = -1;
     private static double knownMinX = -1;
+
+    private static int defaultK = 1;
 
     private static boolean isInRange(Pair<Double, Double> range, Server srv){
         return  (range.getP1() >= srv.getDb().getMin_X() && range.getP2() <= srv.getDb().getMax_X());
@@ -171,15 +177,11 @@ public class Client {
         System.out.print("\r" + bar.toString());
     }
 
-    public static void runAttack() {
-        runAttack(1000);
+    private static void runAttack(Server srv) {
+        runAttack(1000,srv);
     }
-    public static void runAttack(int numOfTests) {
-        //DecimalFormat df2 = new DecimalFormat("#.##");
-        Server srv = new Server();
 
-
-
+    private static void runAttack(int numOfTests, Server srv) {
         try {
             PrintWriter logFile = new PrintWriter("Client/Target.log");
             long startTime = System.nanoTime();
@@ -193,49 +195,61 @@ public class Client {
         }
     }
 
-    public static void main(String[] args) {
-        runAttack(1000);
-        /*DecimalFormat df2 = new DecimalFormat("#.##");
-        Server srv = new Server();
+    private static void runSingleAttack(Server srv) {
+        DecimalFormat df2 = new DecimalFormat("#.##");
+        System.out.println("Enter target and timestamp");
+        Scanner input = new Scanner(System.in);
 
+        double vTarget = input.nextDouble();
 
-
-        try {
-            PrintWriter logFile = new PrintWriter("Client/Target.log");
-            long startTime = System.nanoTime();
-            attackAllTargets(srv, 100000, logFile, 13);
-            double attackTime = (System.nanoTime() - startTime) / 1e9;
-            logFile.write("\nTotal attack time is: " + attackTime + "[sec]");
-            System.out.println("\nTotal attack time is: " + attackTime + "[sec]");
-            logFile.close();
-        } catch (FileNotFoundException e) {
-            e.printStackTrace();
+        double timestamp = input.nextDouble();
+        System.out.println("Start Attacking " + vTarget);
+        long startTime = System.nanoTime();
+        double sTarget = Attack(srv, vTarget, timestamp, FORWARD);
+        if(sTarget == -1) {
+            System.out.println("Going Backwards");
+            sTarget = Attack(srv,vTarget,timestamp,BACKWARD);
+            if (sTarget == -1) {
+                System.out.println("Number of elements in timestamp smaller then K");
+                return;
+            }
         }
+        double attackTime = (System.nanoTime() - startTime) / 1e6;
+        System.out.println("The speed of vTarget " + vTarget + " is " + df2.format(sTarget)
+                + "\nTime for attack is " + attackTime + "[ms]\n\n");
+    }
 
-       /* while (true) {
-            System.out.println("Enter target and timestamp, -1 for exit");
+    public static void main(String[] args) {
+        Server srv = new Server();
+        defaultK = srv.k;
+
+        boolean running = true;
+        while (running) {
+            System.out.println("Full Target attack (1) or single target attack (2)? Exit(-1)");
             Scanner input = new Scanner(System.in);
 
-            double vTarget = input.nextDouble();
-            if (vTarget == -1){
-                System.out.println("Exiting...");
-                break;
-            }
-            double timestamp = input.nextDouble();
-            System.out.println("Start Attacking " + vTarget);
-            long startTime = System.nanoTime();
-            double sTarget = Attack(srv, vTarget, timestamp, FORWARD);
-            if(sTarget == -1) {
-                System.out.println("Going Backwards");
-                sTarget = Attack(srv,vTarget,timestamp,BACKWARD);
-                if (sTarget == -1) {
-                    System.out.println("Number of elements in timestamp smaller then K");
-                    continue;
+            int clientAns = input.nextInt();
+            switch(clientAns) {
+                case FULL_CLIENT_ATTACK: {
+                    System.out.println("How many runs?");
+                    runAttack(input.nextInt(), srv);
+                    break;
+                }
+                case SINGLE_CLIENT_ATTACK: {
+                    srv.setK(defaultK);
+                    runSingleAttack(srv);
+                    break;
+                }
+                case EXIT: {
+                    System.out.println("GoodBye! :D");
+                    running = false;
+                    break;
+                }
+                default: {
+                    System.out.println("WTF? " + clientAns);
+                    break;
                 }
             }
-            double attackTime = (System.nanoTime() - startTime) / 1e6;
-            System.out.println("The speed of vTarget " + vTarget + " is " + df2.format(sTarget)
-                    + "\nTime for attack is " + attackTime + "[ms]\n\n");
-        }*/
+        }
     }
 }

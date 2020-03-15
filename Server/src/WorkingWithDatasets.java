@@ -9,6 +9,7 @@
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -44,6 +45,7 @@ class WorkingWithDatasets {
     private Database createDB() throws IOException {
         String[] splitted;
         DataFormat df;
+        DecimalFormat df2 = new DecimalFormat("#.##");
         // Prepare file for writing
         if(targetList != null) {
             String sb = "Timestamp,X,Y,Velocity,Attack Time for K: [ms]," +
@@ -56,7 +58,7 @@ class WorkingWithDatasets {
                     Integer.parseInt(splitted[1].contains("_") ? splitted[1].substring(13) : splitted[1]),
                     Double.parseDouble(splitted[2]),
                     Double.parseDouble(splitted[3]),
-                    Double.parseDouble(splitted[4])
+                    Double.parseDouble(df2.format(Double.parseDouble(splitted[4])))
             );
             db.addToDB(df);
             if(targetList != null)
@@ -65,6 +67,7 @@ class WorkingWithDatasets {
         datasetScanner.close();
         if(targetList != null)
             targetList.close();
+        db.addSumToIndexForDb();
         return db;
     }
 

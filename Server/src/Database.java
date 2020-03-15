@@ -1,3 +1,6 @@
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -6,7 +9,7 @@ import java.util.logging.Logger;
 
 class Database {
     private HashMap<Double, DataArr> db;
-
+    private final boolean DBG = false;
 
     /* ============================================ */
     //private HashMap<Double, BST> db;
@@ -41,29 +44,51 @@ class Database {
     }
 
     Pair<Double, Double> getVelocityInRange(double timestamp, Pair<Double, Double> range) {
-        Pair<Double, Double> returnPair = new Pair<>();
-        //double upperBound = range.getP2(), lowerBound = range.getP1();
-        DataArr relaventArr = db.get(timestamp);
+        DataArr relevantArr = db.get(timestamp);
+        int lowerBoundIndex, upperBoundIndex;
+        double avgVelocity;
 
-        if (relaventArr == null) {
+        if (relevantArr == null) {
             System.out.println("No arr for timestamp: " + timestamp + " range: " + range.toString());
             return null;
         }
 
-        int lowerBoundIndex = relaventArr.indexOfX(range.getP1());
+        if(range.getP1() == this.min_X) lowerBoundIndex = 0;
+        else lowerBoundIndex = relevantArr.closestNumber(range.getP1(), false);
         if (lowerBoundIndex == -1) {
-            System.out.println("No index for lowerBound: " + range.getP1());
+            if (DBG)
+                System.out.println("No index for lowerBound: " + range.getP1());
             return null;
         }
 
-        int upperBoundIndex = relaventArr.indexOfX(range.getP2());
+        if(range.getP2() == this.max_X) upperBoundIndex = relevantArr.size()-1;
+        else upperBoundIndex = relevantArr.closestNumber(range.getP2(), true);
         if (upperBoundIndex == -1) {
-            System.out.println("No index for upperBound: " + range.getP2());
+            if(DBG)
+                System.out.println("No index for upperBound: " + range.getP2());
             return null;
         }
 
-        double k = upperBoundIndex - lowerBoundIndex;
-        double avgVelocity = (relaventArr.get(upperBoundIndex).sumToIndex - relaventArr.get(lowerBoundIndex).sumToIndex) / k;
-        return new Pair<>(k, avgVelocity);
+        double numOfElementsInRange = upperBoundIndex - lowerBoundIndex + 1;
+        if(numOfElementsInRange == 1) avgVelocity = relevantArr.get(upperBoundIndex).velocity;
+        else {
+            if (lowerBoundIndex != 0)
+                avgVelocity = (relevantArr.get(upperBoundIndex).sumToIndex -
+                        relevantArr.get(lowerBoundIndex - 1).sumToIndex) / numOfElementsInRange;
+            else
+                avgVelocity = relevantArr.get(upperBoundIndex).sumToIndex / numOfElementsInRange;
+        }
+        return new Pair<>(numOfElementsInRange, avgVelocity);
     }
+
+    void addSumToIndexForDb() {
+        DecimalFormat df2 = new DecimalFormat("#.##");
+        for (DataArr dataArr : db.values()) {
+            for (int i = 1; i < dataArr.size(); i++) {
+                dataArr.get(i).sumToIndex += dataArr.get(i - 1).sumToIndex;
+                dataArr.get(i).sumToIndex = (Double.parseDouble(df2.format(dataArr.get(i).sumToIndex)));
+            }
+        }
+    }
+
 }
