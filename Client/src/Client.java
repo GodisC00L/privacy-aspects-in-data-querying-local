@@ -5,6 +5,7 @@ import java.util.Scanner;
 public class Client {
     private static final int FULL_CLIENT_ATTACK     = 1;
     private static final int SINGLE_CLIENT_ATTACK   = 2;
+    private static final int SET_K                  = 3;
     private static final int EXIT                   = -1;
 
 
@@ -33,12 +34,12 @@ public class Client {
             if(direction == FORWARD) {
                 pair.setP2(pair.getP2() - 1);
                 while (isInRange(pair, srv) && ((sAvg = srv.getAvgVelocity(pair, timestamp)) == -1))
-                    pair.setP2(pair.getP2() + 0.1);
+                    pair.setP2(pair.getP2() + 0.001);
             }
             else if (direction == BACKWARD) {
                 pair.setP1(pair.getP1() + 1);
                 while (isInRange(pair, srv) &&((sAvg = srv.getAvgVelocity(pair, timestamp)) == -1))
-                    pair.setP1(pair.getP1() - 0.1);
+                    pair.setP1(pair.getP1() - 0.001);
             }
         }
         if(direction == FORWARD)
@@ -219,13 +220,18 @@ public class Client {
                 + "\nTime for attack is " + attackTime + "[ms]\n\n");
     }
 
+    // TODO: Failed test for k = 64, timestamp: 16200.0, xTarget: 3925.542330224083 Ans = 5.13 Velocity = 4.83
+
     public static void main(String[] args) {
         Server srv = new Server();
         defaultK = srv.k;
 
         boolean running = true;
         while (running) {
-            System.out.println("Full Target attack (1) or single target attack (2)? Exit(-1)");
+            System.out.println("1. Full Target attack\n" +
+                    "2. Single target attack\n" +
+                    "3. Set K\n" +
+                    "-1 Exit");
             Scanner input = new Scanner(System.in);
 
             int clientAns = input.nextInt();
@@ -238,6 +244,12 @@ public class Client {
                 case SINGLE_CLIENT_ATTACK: {
                     srv.setK(defaultK);
                     runSingleAttack(srv);
+                    break;
+                }
+                case SET_K: {
+                    System.out.println("Input k:");
+                    defaultK = input.nextInt();
+                    System.out.println("K set to: " + defaultK);
                     break;
                 }
                 case EXIT: {
