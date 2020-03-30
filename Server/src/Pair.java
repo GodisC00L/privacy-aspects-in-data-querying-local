@@ -20,4 +20,12 @@ public class Pair<T, K> {
 
     public void setP2(K p2) { this.p2 = p2; }
 
+    @Override
+    public String toString() {
+        return "Pair{" +
+                "p1=" + p1 +
+                ", p2=" + p2 +
+                '}';
+    }
 }
+

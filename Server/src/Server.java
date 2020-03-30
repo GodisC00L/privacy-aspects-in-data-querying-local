@@ -7,9 +7,9 @@ import java.util.List;
 public class Server {
     private WorkingWithDatasets ds;
     private Database db;
-    private final String targetListPath = "Server/fixedVelocities_20_MB_T1_target.csv";
+    private final String targetListPath = "Server/fixedVelocities_10_MB_target.csv";
 
-    private final String path = "Server/fixedVelocities_20_MB_T1.txt";
+    private final String path = "Server/fixedVelocities_10_MB.txt";
     public int k = 10;
     //private final String path = "Server/t1.txt";
 

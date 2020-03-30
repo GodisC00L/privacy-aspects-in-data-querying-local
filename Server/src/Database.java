@@ -79,6 +79,7 @@ class Database {
                 velociyList.add(currentNode.getVelocity());
             return velociyList;
         }
+        System.out.println("SplitNode is null" + range.toString());
         return null;
     }
 
@@ -90,11 +91,13 @@ class Database {
                     currentNode = currentNode.getLeft();
                 else
                     currentNode = currentNode.getRight();
-                if (currentNode == null)
+                if (currentNode == null) {
                     return null;
+                }
             }
             return currentNode;
         }
+
         return null;
     }
 }
