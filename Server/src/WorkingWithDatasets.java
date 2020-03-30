@@ -9,6 +9,7 @@
 
 import java.io.*;
 import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -26,48 +27,29 @@ class WorkingWithDatasets {
     /* Constructor for class */
     WorkingWithDatasets(String path, String targetPath) throws FileNotFoundException {
         FileInputStream inputStream = new FileInputStream(path);
-        if(!(new File(targetPath).exists()))
+        if(!(new File(targetPath).exists())) {
             targetList = new PrintWriter(targetPath);
+        }
         datasetScanner = new Scanner(inputStream);
+        //randomVelocities_andCutSize(40);
     }
 
-    Database getDB() {
+    Database getDB() throws IOException {
         if (this.db.getDb().isEmpty())
             this.db = createDB();
         return db;
     }
 
-    private class DataFormat  {
-        private double timestamp, x, y, velocity;
-        private int carID;
 
-        DataFormat(double timestamp, int carID, double x, double y, double velocity) {
-            this.timestamp = timestamp;
-            this.x = x;
-            this.y = y;
-            this.velocity = velocity;
-            this.carID = carID;
-        }
 
-        @Override
-        public String toString() {
-            return "dataFormat{" +
-                    "timestamp=" + timestamp +
-                    ", x=" + x +
-                    ", y=" + y +
-                    ", velocity=" + velocity +
-                    ", carID=" + carID +
-                    '}';
-        }
-    }
-
-    private Database createDB() {
+    private Database createDB() throws IOException {
         String[] splitted;
         DataFormat df;
+        DecimalFormat df2 = new DecimalFormat("#.##");
         // Prepare file for writing
         if(targetList != null) {
             String sb = "Timestamp,X,Y,Velocity,Attack Time for K: [ms]," +
-                    "1,10,20,30,40,50,60,70,80,90,100,110,120,130,140,150,160,170,180,190,200" + "\n";
+                    "1,2,4,8,16,32,64,128,256,512,1024,2048,4096" + "\n";
             targetList.write(sb);
         }
         while(datasetScanner.hasNextLine()) {
@@ -76,22 +58,22 @@ class WorkingWithDatasets {
                     Integer.parseInt(splitted[1].contains("_") ? splitted[1].substring(13) : splitted[1]),
                     Double.parseDouble(splitted[2]),
                     Double.parseDouble(splitted[3]),
-                    Double.parseDouble(splitted[4])
+                    Double.parseDouble(df2.format(Double.parseDouble(splitted[4])))
             );
-            db.addToDB(df.x, df.velocity, df.timestamp);
+            db.addToDB(df);
             if(targetList != null)
                 writeToTargetList(df);
         }
         datasetScanner.close();
         if(targetList != null)
             targetList.close();
+        db.addSumToIndexForDb();
         return db;
     }
 
     private void writeToTargetList(DataFormat df){
         targetList.write((df.timestamp + "," + df.x + "," + df.y + "\n"));
     }
-
 
     private void randomVelocities_andCutSize(int size) throws FileNotFoundException {
         String inputLine;
@@ -101,14 +83,18 @@ class WorkingWithDatasets {
         long total=0;
         PrintWriter writer = new PrintWriter("Server/fixedVelocities_" + size + "_MB.txt");
         //PrintWriter writer = new PrintWriter("D:/fixedVelocities.txt");
+        for (int i = 0; i < 750000; i++) {
+            datasetScanner.nextLine();
+        }
         while(datasetScanner.hasNextLine() && bytesToMeg(total) <= size) {
-            rand = ThreadLocalRandom.current().nextDouble(0, 30);
+            //rand = ThreadLocalRandom.current().nextDouble(0, 30);
             inputLine = datasetScanner.nextLine();
-            splited = inputLine.split(" ");
-            splited[splited.length -1] =  String.format("%.2f", rand);
-            outputLine = String.join(" ", splited);
-            total += outputLine.getBytes(StandardCharsets.UTF_8).length;
-            writer.println(outputLine);
+            //splited = inputLine.split(" ");
+            //splited[splited.length -1] =  String.format("%.2f", rand);
+            //outputLine = String.join(" ", splited);
+            //total += outputLine.getBytes(StandardCharsets.UTF_8).length;
+            total += inputLine.getBytes(StandardCharsets.UTF_8).length;
+            writer.println(inputLine);
         }
         writer.close();
     }
