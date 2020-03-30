@@ -11,6 +11,8 @@ public class Client {
 
     private static final int FORWARD    = 1;
     private static final int BACKWARD   = 2;
+    private static double knownMaxX = -1;
+    private static double knownMinX = -1;
 
     private static final double DEFAULT_RESOLUTION   = 0.1;
 
@@ -65,12 +67,14 @@ public class Client {
                 return -1;
             }
             pair = getMinRange(srv, vTarget, knownMaxX, timestamp, direction, resolution);
+
         } else {
             // If we cant get for the Min range there is no point to check in incrementally
             if(srv.getAvgVelocity(new Pair<>(srv.getDb().getMin_X(), vTarget), timestamp) < 0) {
                 return -1;
             }
             pair = getMinRange(srv, knownMinX, vTarget, timestamp, direction, resolution);
+
         }
 
         // In case out of bounds
@@ -184,6 +188,7 @@ public class Client {
             }
         }
 
+
         bar.append("]   ").append(percent).append("%     ");
         System.out.print("\r" + bar.toString());
     }
@@ -193,6 +198,7 @@ public class Client {
             PrintWriter logFile = new PrintWriter("Client/Target.log");
             long startTime = System.nanoTime();
             attackAllTargets(srv, numOfTests, logFile, 13);
+
             double attackTime = (System.nanoTime() - startTime) / 1e9;
             logFile.write("\nTotal attack time is: " + attackTime + "[sec]");
             System.out.println("\nTotal attack time is: " + attackTime + "[sec]");
@@ -208,6 +214,7 @@ public class Client {
         Scanner input = new Scanner(System.in);
 
         double vTarget = input.nextDouble();
+
 
         double timestamp = input.nextDouble();
         System.out.println("Start Attacking " + vTarget);
