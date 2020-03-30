@@ -11,16 +11,18 @@ public class Client {
 
     private static final int FORWARD    = 1;
     private static final int BACKWARD   = 2;
+
+    private static final double DEFAULT_RESOLUTION   = 0.1;
+
     private static double knownMaxX = -1;
     private static double knownMinX = -1;
-
-    private static int defaultK = 1;
 
     private static boolean isInRange(Pair<Double, Double> range, Server srv){
         return  (range.getP1() >= srv.getDb().getMin_X() && range.getP2() <= srv.getDb().getMax_X());
     }
 
-    private static Pair<Double,Double> getMinRange(Server srv, double xMin, double xMax, double timestamp, int direction){
+    private static Pair<Double,Double> getMinRange(Server srv, double xMin, double xMax,
+                                                   double timestamp, int direction, double resolution){
         Pair<Double, Double> pair = new Pair<>(xMin,xMax);
         double sAvg = -1;
         while (isInRange(pair, srv) && ((sAvg = srv.getAvgVelocity(pair, timestamp)) == -1)) {
@@ -34,12 +36,12 @@ public class Client {
             if(direction == FORWARD) {
                 pair.setP2(pair.getP2() - 1);
                 while (isInRange(pair, srv) && ((sAvg = srv.getAvgVelocity(pair, timestamp)) == -1))
-                    pair.setP2(pair.getP2() + 0.001);
+                    pair.setP2(pair.getP2() + resolution);
             }
             else if (direction == BACKWARD) {
                 pair.setP1(pair.getP1() + 1);
                 while (isInRange(pair, srv) &&((sAvg = srv.getAvgVelocity(pair, timestamp)) == -1))
-                    pair.setP1(pair.getP1() - 0.001);
+                    pair.setP1(pair.getP1() - resolution);
             }
         }
         if(direction == FORWARD)
@@ -47,7 +49,7 @@ public class Client {
         return new Pair<>(pair.getP1(), sAvg);
     }
 
-    private static double Attack(Server srv, double vTarget, double timestamp, int direction){
+    private static double Attack(Server srv, double vTarget, double timestamp, int direction, double resolution){
         int k = srv.k;
         double xMin, xMax;
         Pair<Double, Double> pair;
@@ -62,13 +64,13 @@ public class Client {
             if(srv.getAvgVelocity(new Pair<>(vTarget, srv.getDb().getMax_X()), timestamp) < 0) {
                 return -1;
             }
-            pair = getMinRange(srv, vTarget, knownMaxX, timestamp, direction);
+            pair = getMinRange(srv, vTarget, knownMaxX, timestamp, direction, resolution);
         } else {
             // If we cant get for the Min range there is no point to check in incrementally
             if(srv.getAvgVelocity(new Pair<>(srv.getDb().getMin_X(), vTarget), timestamp) < 0) {
                 return -1;
             }
-            pair = getMinRange(srv, knownMinX, vTarget, timestamp, direction);
+            pair = getMinRange(srv, knownMinX, vTarget, timestamp, direction, resolution);
         }
 
         // In case out of bounds
@@ -77,12 +79,12 @@ public class Client {
         }
         if(direction == FORWARD) {
             xMax = pair.getP1();
-            xMin = vTarget + 0.001;
+            xMin = vTarget + 0.000001;
         } else {
-            xMax = vTarget - 0.001;
+            xMax = vTarget - 0.000001;
             xMin = pair.getP1();
         }
-        pair = getMinRange(srv, xMin, xMax, timestamp, direction);
+        pair = getMinRange(srv, xMin, xMax, timestamp, direction, resolution);
         // In case out of bounds
         if (pair.getP2() == -1)
             return -1;
@@ -116,6 +118,7 @@ public class Client {
 
         double xTarget, timestamp, yTarget, velocity;
         int test = 0;
+        double resolution;
         while(scanner.hasNextLine() && test != numOfTests) {
             failFlag = false;
             StringBuilder timeString = new StringBuilder();
@@ -128,13 +131,14 @@ public class Client {
             // reset known xTarget
             knownMinX = -1;
             knownMaxX = -1;
+            resolution = DEFAULT_RESOLUTION;
             for(int i = 0, j = 1; i < numOfKTest && !failFlag; i++, j<<=1) {
                 double ans;
                 srv.setK(j);
                 long startTime = System.nanoTime();
-                ans = Attack(srv, xTarget, timestamp,FORWARD);
+                ans = Attack(srv, xTarget, timestamp,FORWARD,resolution);
                 if(ans == -1) {
-                    ans = Attack(srv, xTarget, timestamp,BACKWARD);
+                    ans = Attack(srv, xTarget, timestamp,BACKWARD,resolution);
                 }
                 if (ans != -1)
                     timeString.append((System.nanoTime() - startTime) / 1e6).append(",");
@@ -146,10 +150,16 @@ public class Client {
                 ans = Math.round(ans * 100.0) / 100.0;
                 if(velocity == -1)
                     velocity = ans;
-                if(velocity != ans && ans != -1)
-                    logFile.write("Failed test for k = " + j +", timestamp: "
-                                        + timestamp + ", xTarget: " + xTarget
-                                        + " Ans = " + ans + " Velocity = " + velocity + "\n");
+                if(velocity != ans && ans != -1) {
+                    if(resolution < DEFAULT_RESOLUTION/10000){
+                        logFile.write("Failed test for k = " + j + ", timestamp: "
+                                + timestamp + ", xTarget: " + xTarget
+                                + " Ans = " + ans + " Velocity = " + velocity + "\n");
+                        continue;
+                    }
+                    resolution = resolution/10;
+                    i--;
+                }
             }
             attackedFile.write(timestamp + "," + xTarget + ","
                                 + yTarget + "," + velocity + ",," + timeString + "\n");
@@ -174,12 +184,8 @@ public class Client {
             }
         }
 
-        bar.append("]   " + percent + "%     ");
+        bar.append("]   ").append(percent).append("%     ");
         System.out.print("\r" + bar.toString());
-    }
-
-    private static void runAttack(Server srv) {
-        runAttack(1000,srv);
     }
 
     private static void runAttack(int numOfTests, Server srv) {
@@ -206,10 +212,10 @@ public class Client {
         double timestamp = input.nextDouble();
         System.out.println("Start Attacking " + vTarget);
         long startTime = System.nanoTime();
-        double sTarget = Attack(srv, vTarget, timestamp, FORWARD);
+        double sTarget = Attack(srv, vTarget, timestamp, FORWARD, DEFAULT_RESOLUTION);
         if(sTarget == -1) {
             System.out.println("Going Backwards");
-            sTarget = Attack(srv,vTarget,timestamp,BACKWARD);
+            sTarget = Attack(srv,vTarget,timestamp,BACKWARD, DEFAULT_RESOLUTION);
             if (sTarget == -1) {
                 System.out.println("Number of elements in timestamp smaller then K");
                 return;
@@ -220,11 +226,9 @@ public class Client {
                 + "\nTime for attack is " + attackTime + "[ms]\n\n");
     }
 
-    // TODO: Failed test for k = 64, timestamp: 16200.0, xTarget: 3925.542330224083 Ans = 5.13 Velocity = 4.83
-
     public static void main(String[] args) {
         Server srv = new Server();
-        defaultK = srv.k;
+        int defaultK = srv.k;
 
         boolean running = true;
         while (running) {
