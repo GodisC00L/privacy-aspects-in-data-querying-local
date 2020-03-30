@@ -39,13 +39,9 @@ public class Server {
         double result = -1;
         if(range.getP1() < db.getMin_X() || range.getP2() > db.getMax_X())
             return result;
-        List<Double> allVelocities = db.getVelocityInRange(timestamp, range);
-        if(allVelocities != null && allVelocities.size() >= this.k) {
-            result = 0;
-            for(Double vel : allVelocities)
-                result += vel;
-            result /= allVelocities.size();
-        }
+        Pair<Double, Double> kVelocityPair = db.getVelocityInRange(timestamp, range);
+        if(kVelocityPair != null && kVelocityPair.getP1() >= this.k)
+            result =  kVelocityPair.getP2();
         return result;
     }
 
