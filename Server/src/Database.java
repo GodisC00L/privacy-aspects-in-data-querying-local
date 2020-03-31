@@ -1,3 +1,4 @@
+
 import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.text.DecimalFormat;
@@ -5,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.logging.Level;
+
 import java.util.logging.Logger;
 
 class Database {
@@ -14,6 +16,7 @@ class Database {
     /* ============================================ */
     //private HashMap<Double, BST> db;
     private double min_X = 0, max_X = 0;
+    private double min_Y = 0, max_Y = 0;
 
     double getMin_X() {
         return min_X;
@@ -21,6 +24,14 @@ class Database {
 
     double getMax_X() {
         return max_X;
+    }
+
+    double getMin_Y() {
+        return min_Y;
+    }
+
+    double getMax_Y() {
+        return max_Y;
     }
 
     Database() {
@@ -32,6 +43,10 @@ class Database {
             this.max_X = dataFormat.x;
         else if (dataFormat.x < this.min_X || this.min_X == 0)
             this.min_X = dataFormat.x;
+        if (dataFormat.y > this.max_Y || this.max_Y == 0)
+            this.max_Y = dataFormat.y;
+        else if (dataFormat.y < this.min_Y || this.min_Y == 0)
+            this.min_Y = dataFormat.y;
         if(db.containsKey(dataFormat.timestamp)) {
             db.get(dataFormat.timestamp).add(dataFormat);
         } else {

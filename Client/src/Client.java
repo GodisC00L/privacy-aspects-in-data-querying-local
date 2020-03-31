@@ -63,17 +63,17 @@ public class Client {
         }
         if(direction == FORWARD) {
             // If we cant get for the Max range there is no point to check in incrementally
-            if(srv.getAvgVelocity(new Pair<>(vTarget, srv.getDb().getMax_X()), timestamp) < 0) {
+            if(srv.getAvgVelocity(new Pair<>(vTarget+0.00001, srv.getDb().getMax_X()), timestamp) < 0) {
                 return -1;
             }
-            pair = getMinRange(srv, vTarget, knownMaxX, timestamp, direction, resolution);
+            pair = getMinRange(srv, vTarget+0.00001, knownMaxX, timestamp, direction, resolution);
 
         } else {
             // If we cant get for the Min range there is no point to check in incrementally
-            if(srv.getAvgVelocity(new Pair<>(srv.getDb().getMin_X(), vTarget), timestamp) < 0) {
+            if(srv.getAvgVelocity(new Pair<>(srv.getDb().getMin_X(), vTarget-0.00001), timestamp) < 0) {
                 return -1;
             }
-            pair = getMinRange(srv, knownMinX, vTarget, timestamp, direction, resolution);
+            pair = getMinRange(srv, knownMinX, vTarget-0.00001, timestamp, direction, resolution);
 
         }
 
@@ -81,17 +81,17 @@ public class Client {
         if (pair.getP2() == -1) {
             return -1;
         }
-        if(direction == FORWARD) {
-            xMax = pair.getP1();
-            xMin = vTarget + 0.000001;
-        } else {
-            xMax = vTarget - 0.000001;
-            xMin = pair.getP1();
-        }
-        pair = getMinRange(srv, xMin, xMax, timestamp, direction, resolution);
-        // In case out of bounds
-        if (pair.getP2() == -1)
-            return -1;
+//        if(direction == FORWARD) {
+//            xMax = pair.getP1();
+//            xMin = vTarget + 0.000001;
+//        } else {
+//            xMax = vTarget - 0.000001;
+//            xMin = pair.getP1();
+//        }
+//        pair = getMinRange(srv, xMin, xMax, timestamp, direction, resolution);
+//        // In case out of bounds
+//        if (pair.getP2() == -1)
+//            return -1;
 
         double xFinal = pair.getP1();
         double sAvg1 = pair.getP2();
@@ -109,7 +109,7 @@ public class Client {
     }
 
     private static void attackAllTargets(Server srv, int numOfTests, PrintWriter logFile, int numOfKTest) throws FileNotFoundException {
-        String targetListPath = "Client/target.csv";
+        String targetListPath = "fixedVelocities_10_MB_target.csv";
         FileInputStream inputStream = new FileInputStream(targetListPath);
         String attackedList = "Client/target_attacked.csv";
         PrintWriter attackedFile = new PrintWriter(attackedList);
@@ -232,6 +232,7 @@ public class Client {
         System.out.println("The speed of vTarget " + vTarget + " is " + df2.format(sTarget)
                 + "\nTime for attack is " + attackTime + "[ms]\n\n");
     }
+
 
     public static void main(String[] args) {
         Server srv = new Server();

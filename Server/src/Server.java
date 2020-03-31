@@ -8,9 +8,9 @@ import java.util.List;
 public class Server {
     private WorkingWithDatasets ds;
     private Database db;
-    private final String targetListPath = "Server/fixedVelocities_40_MB_target.csv";
+    private final String targetListPath = "Server/fixedVelocities_10_MB_target.csv";
 
-    private final String path = "Server/fixedVelocities_40_MB.txt";
+    private final String path = "Server/fixedVelocities_10_MB.txt";
     public int k = 10;
     //private final String path = "/home/user/Downloads/koln.tr";
 
@@ -47,5 +47,9 @@ public class Server {
 
     public void setK(int k) {
         this.k = k;
+    }
+
+    public double getAvgVelocity2D(Pair<Pair, Pair> target, double timestamp) {
+        //TODO
     }
 }
