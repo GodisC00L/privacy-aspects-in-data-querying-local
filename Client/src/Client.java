@@ -16,9 +16,6 @@ public class Client {
 
     private static final double DEFAULT_RESOLUTION   = 0.1;
 
-    private static double knownMaxX = -1;
-    private static double knownMinX = -1;
-
     private static boolean isInRange(Pair<Double, Double> range, Server srv){
         return  (range.getP1() >= srv.getDb().getMin_X() && range.getP2() <= srv.getDb().getMax_X());
     }
