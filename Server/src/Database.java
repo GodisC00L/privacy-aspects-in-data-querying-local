@@ -11,8 +11,6 @@ class Database {
     private HashMap<Double, DataArr> db;
     private final boolean DBG = false;
 
-    /* ============================================ */
-    //private HashMap<Double, BST> db;
     private double min_X = 0, max_X = 0;
 
     double getMin_X() {
