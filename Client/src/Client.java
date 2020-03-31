@@ -127,7 +127,7 @@ public class Client {
                 double ans;
                 srv.setK(j);
                 long startTime = System.nanoTime();
-                ans = Attack(srv, xTarget+EPSILON, timestamp,FORWARD,resolution);
+                ans = Attack(srv, xTarget, timestamp,FORWARD,resolution);
                 if(ans == -1) {
                     ans = Attack(srv, xTarget, timestamp,BACKWARD,resolution);
                 }
