@@ -7,8 +7,6 @@
  * its position on the two-dimensional plane (x and y coordinates in meters)
  * and its speed (im meters per second).*/
 
-import javafx.scene.input.DataFormat;
-
 import java.io.*;
 import java.nio.charset.StandardCharsets;
 import java.text.DecimalFormat;

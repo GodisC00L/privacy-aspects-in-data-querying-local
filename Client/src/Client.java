@@ -7,6 +7,7 @@ public class Client {
     private static final int SINGLE_CLIENT_ATTACK   = 2;
     private static final int SET_K                  = 3;
     private static final int EXIT                   = -1;
+    private static final double EPSILON             = 0.000001;
 
 
     private static final int FORWARD    = 1;
@@ -60,17 +61,17 @@ public class Client {
         }
         if(direction == FORWARD) {
             // If we cant get for the Max range there is no point to check in incrementally
-            if(srv.getAvgVelocity(new Pair<>(vTarget+0.00001, srv.getDb().getMax_X()), timestamp) < 0) {
+            if(srv.getAvgVelocity(new Pair<>(vTarget+EPSILON, srv.getDb().getMax_X()), timestamp) < 0) {
                 return -1;
             }
-            pair = getMinRange(srv, vTarget+0.00001, knownMaxX, timestamp, direction, resolution);
+            pair = getMinRange(srv, vTarget+EPSILON, knownMaxX, timestamp, direction, resolution);
 
         } else {
             // If we cant get for the Min range there is no point to check in incrementally
-            if(srv.getAvgVelocity(new Pair<>(srv.getDb().getMin_X(), vTarget-0.00001), timestamp) < 0) {
+            if(srv.getAvgVelocity(new Pair<>(srv.getDb().getMin_X(), vTarget-EPSILON), timestamp) < 0) {
                 return -1;
             }
-            pair = getMinRange(srv, knownMinX, vTarget-0.00001, timestamp, direction, resolution);
+            pair = getMinRange(srv, knownMinX, vTarget-EPSILON, timestamp, direction, resolution);
 
         }
 
@@ -78,17 +79,6 @@ public class Client {
         if (pair.getP2() == -1) {
             return -1;
         }
-//        if(direction == FORWARD) {
-//            xMax = pair.getP1();
-//            xMin = vTarget + 0.000001;
-//        } else {
-//            xMax = vTarget - 0.000001;
-//            xMin = pair.getP1();
-//        }
-//        pair = getMinRange(srv, xMin, xMax, timestamp, direction, resolution);
-//        // In case out of bounds
-//        if (pair.getP2() == -1)
-//            return -1;
 
         double xFinal = pair.getP1();
         double sAvg1 = pair.getP2();
@@ -106,7 +96,7 @@ public class Client {
     }
 
     private static void attackAllTargets(Server srv, int numOfTests, PrintWriter logFile, int numOfKTest) throws FileNotFoundException {
-        String targetListPath = "fixedVelocities_10_MB_target.csv";
+        String targetListPath = "Client/target.csv";
         FileInputStream inputStream = new FileInputStream(targetListPath);
         String attackedList = "Client/target_attacked.csv";
         PrintWriter attackedFile = new PrintWriter(attackedList);
@@ -137,7 +127,7 @@ public class Client {
                 double ans;
                 srv.setK(j);
                 long startTime = System.nanoTime();
-                ans = Attack(srv, xTarget, timestamp,FORWARD,resolution);
+                ans = Attack(srv, xTarget+EPSILON, timestamp,FORWARD,resolution);
                 if(ans == -1) {
                     ans = Attack(srv, xTarget, timestamp,BACKWARD,resolution);
                 }
