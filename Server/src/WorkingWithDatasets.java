@@ -19,7 +19,6 @@ import java.util.Scanner;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.regex.Pattern;
 
-
 class WorkingWithDatasets {
 
     private Scanner datasetScanner;
@@ -36,15 +35,13 @@ class WorkingWithDatasets {
         //randomVelocities_andCutSize(40);
     }
 
-    Database getDB() throws IOException {
+    Database getDB() {
         if (this.db.getDb().isEmpty())
             this.db = createDB();
         return db;
     }
 
-
-
-    private Database createDB() throws IOException {
+    private Database createDB() {
         String[] splitted;
         DataFormat df;
         DecimalFormat df2 = new DecimalFormat("#.##");
