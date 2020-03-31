@@ -220,7 +220,6 @@ public class Client {
                 + "\nTime for attack is " + attackTime + "[ms]\n\n");
     }
 
-
     public static void main(String[] args) {
         Server srv = new Server();
         int defaultK = srv.k;
