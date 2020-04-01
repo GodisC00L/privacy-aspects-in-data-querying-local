@@ -7,6 +7,7 @@ public class Client {
     private static final int SINGLE_CLIENT_ATTACK   = 2;
     private static final int SET_K                  = 3;
     private static final int EXIT                   = -1;
+    private static final double EPSILON             = 0.000001;
 
 
     private static final int FORWARD    = 1;
@@ -60,17 +61,17 @@ public class Client {
         }
         if(direction == FORWARD) {
             // If we cant get for the Max range there is no point to check in incrementally
-            if(srv.getAvgVelocity(new Pair<>(vTarget, srv.getDb().getMax_X()), timestamp) < 0) {
+            if(srv.getAvgVelocity(new Pair<>(vTarget+EPSILON, srv.getDb().getMax_X()), timestamp) < 0) {
                 return -1;
             }
-            pair = getMinRange(srv, vTarget, knownMaxX, timestamp, direction, resolution);
+            pair = getMinRange(srv, vTarget+EPSILON, knownMaxX, timestamp, direction, resolution);
 
         } else {
             // If we cant get for the Min range there is no point to check in incrementally
-            if(srv.getAvgVelocity(new Pair<>(srv.getDb().getMin_X(), vTarget), timestamp) < 0) {
+            if(srv.getAvgVelocity(new Pair<>(srv.getDb().getMin_X(), vTarget-EPSILON), timestamp) < 0) {
                 return -1;
             }
-            pair = getMinRange(srv, knownMinX, vTarget, timestamp, direction, resolution);
+            pair = getMinRange(srv, knownMinX, vTarget-EPSILON, timestamp, direction, resolution);
 
         }
 
@@ -78,17 +79,6 @@ public class Client {
         if (pair.getP2() == -1) {
             return -1;
         }
-        if(direction == FORWARD) {
-            xMax = pair.getP1();
-            xMin = vTarget + 0.000001;
-        } else {
-            xMax = vTarget - 0.000001;
-            xMin = pair.getP1();
-        }
-        pair = getMinRange(srv, xMin, xMax, timestamp, direction, resolution);
-        // In case out of bounds
-        if (pair.getP2() == -1)
-            return -1;
 
         double xFinal = pair.getP1();
         double sAvg1 = pair.getP2();
