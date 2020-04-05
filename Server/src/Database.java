@@ -1,17 +1,26 @@
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import com.sun.source.tree.Tree;
+
 import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.SortedMap;
+import java.util.TreeMap;
+
+/**
+ * Database structure:
+ *      HashMap: Key:       Double Timestamp
+ *               Value:     BST yTs
+ *
+ *      BST:     Node:      double Y
+*                           DataArr xList
+ */
 
 class Database {
-    private HashMap<Double, DataArr> db;
+    private HashMap<Double, BST> db;
     private final boolean DBG = false;
 
     private double min_X = 0, max_X = 0;
+
+    private double min_Y = 0, max_Y = 0;
 
     double getMin_X() {
         return min_X;
@@ -21,28 +30,47 @@ class Database {
         return max_X;
     }
 
+    public double getMin_Y() {
+        return min_Y;
+    }
+
+    public double getMax_Y() {
+        return max_Y;
+    }
+
     Database() {
         this.db = new HashMap<>();
     }
 
     void addToDB(DataFormat dataFormat) {
+        updateMinMax(dataFormat);
+        BST tsRoot = db.getOrDefault(dataFormat.timestamp, null);
+
+        if(tsRoot != null) {
+            tsRoot.insert(dataFormat);
+        } else {
+            tsRoot = new BST(dataFormat);
+            db.put(dataFormat.timestamp, tsRoot);
+        }
+    }
+
+    private void updateMinMax(DataFormat dataFormat) {
         if (dataFormat.x > this.max_X || this.max_X == 0)
             this.max_X = dataFormat.x;
         else if (dataFormat.x < this.min_X || this.min_X == 0)
             this.min_X = dataFormat.x;
-        if(db.containsKey(dataFormat.timestamp)) {
-            db.get(dataFormat.timestamp).add(dataFormat);
-        } else {
-            db.put(dataFormat.timestamp, new DataArr(dataFormat));
-        }
+        if (dataFormat.y > this.max_Y || this.max_Y == 0)
+            this.max_Y = dataFormat.y;
+        else if (dataFormat.y < this.min_Y || this.min_Y == 0)
+            this.min_Y = dataFormat.y;
     }
 
-    HashMap<Double, DataArr> getDb() {
+    HashMap<Double, BST> getDb() {
         return db;
     }
 
     Pair<Double, Double> getVelocityInRange(double timestamp, Pair<Double, Double> range) {
-        DataArr relevantArr = db.get(timestamp);
+        /*DataArr relevantArr = db.get(timestamp);
         int lowerBoundIndex, upperBoundIndex;
         double avgVelocity;
 
@@ -76,17 +104,18 @@ class Database {
             else
                 avgVelocity = relevantArr.get(upperBoundIndex).sumToIndex / numOfElementsInRange;
         }
-        return new Pair<>(numOfElementsInRange, avgVelocity);
+        return new Pair<>(numOfElementsInRange, avgVelocity);*/
+        return new Pair<>(-1.0,-1.0);
     }
 
     void addSumToIndexForDb() {
         DecimalFormat df2 = new DecimalFormat("#.##");
-        for (DataArr dataArr : db.values()) {
+        /*for (DataArr dataArr : db.values()) {
             for (int i = 1; i < dataArr.size(); i++) {
                 dataArr.get(i).sumToIndex += dataArr.get(i - 1).sumToIndex;
                 dataArr.get(i).sumToIndex = (Double.parseDouble(df2.format(dataArr.get(i).sumToIndex)));
             }
-        }
+        }*/
     }
 
 }
