@@ -30,4 +30,10 @@ public class Pair<T, K> {
                 ", p2=" + p2 +
                 '}';
     }
+
+    public void swap() {
+        T temp = p1;
+        p1 = (T) p2;
+        p2 = (K) temp;
+    }
 }

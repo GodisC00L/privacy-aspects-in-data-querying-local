@@ -128,4 +128,8 @@ public class BST {
         else if (this.minY > y)
             this.minY = y;
     }
+
+    Node getRelevantSubTree (Pair<Double, Double> yRange){
+        return root.getNodeInRange(yRange);
+    }
 }
