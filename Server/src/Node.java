@@ -10,4 +10,7 @@ public class Node {
         this.right = null;
     }
 
+    boolean isLeaf(){
+        return left == null && right == null;
+    }
 }

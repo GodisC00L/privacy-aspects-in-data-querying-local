@@ -1,9 +1,5 @@
-import com.sun.source.tree.Tree;
-
-import java.text.DecimalFormat;
 import java.util.HashMap;
-import java.util.SortedMap;
-import java.util.TreeMap;
+
 
 /**
  * Database structure:
@@ -69,6 +65,14 @@ class Database {
         return db;
     }
 
+    void balanceBST() {
+        for(BST yTree : db.values()) {
+            yTree.balance();
+            yTree.addSumAndMergeLists();
+        }
+    }
+
+
     Pair<Double, Double> getVelocityInRange(double timestamp, Pair<Double, Double> range) {
         /*DataArr relevantArr = db.get(timestamp);
         int lowerBoundIndex, upperBoundIndex;
@@ -106,16 +110,6 @@ class Database {
         }
         return new Pair<>(numOfElementsInRange, avgVelocity);*/
         return new Pair<>(-1.0,-1.0);
-    }
-
-    void addSumToIndexForDb() {
-        DecimalFormat df2 = new DecimalFormat("#.##");
-        /*for (DataArr dataArr : db.values()) {
-            for (int i = 1; i < dataArr.size(); i++) {
-                dataArr.get(i).sumToIndex += dataArr.get(i - 1).sumToIndex;
-                dataArr.get(i).sumToIndex = (Double.parseDouble(df2.format(dataArr.get(i).sumToIndex)));
-            }
-        }*/
     }
 
 }

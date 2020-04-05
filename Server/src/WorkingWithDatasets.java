@@ -64,7 +64,7 @@ class WorkingWithDatasets {
         datasetScanner.close();
         if(targetList != null)
             targetList.close();
-        db.addSumToIndexForDb();
+        db.balanceBST();
         return db;
     }
 
