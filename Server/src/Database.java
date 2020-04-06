@@ -1,17 +1,22 @@
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-import java.text.DecimalFormat;
-import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+
+
+/**
+ * Database structure:
+ *      HashMap: Key:       Double Timestamp
+ *               Value:     BST yTs
+ *
+ *      BST:     Node:      double Y
+*                           DataArr xList
+ */
 
 class Database {
-    private HashMap<Double, DataArr> db;
+    private HashMap<Double, BST> db;
     private final boolean DBG = false;
 
     private double min_X = 0, max_X = 0;
+
+    private double min_Y = 0, max_Y = 0;
 
     double getMin_X() {
         return min_X;
@@ -21,28 +26,57 @@ class Database {
         return max_X;
     }
 
+    public double getMin_Y() {
+        return min_Y;
+    }
+
+    public double getMax_Y() {
+        return max_Y;
+    }
+
     Database() {
         this.db = new HashMap<>();
     }
 
     void addToDB(DataFormat dataFormat) {
-        if (dataFormat.x > this.max_X || this.max_X == 0)
-            this.max_X = dataFormat.x;
-        else if (dataFormat.x < this.min_X || this.min_X == 0)
-            this.min_X = dataFormat.x;
-        if(db.containsKey(dataFormat.timestamp)) {
-            db.get(dataFormat.timestamp).add(dataFormat);
+        updateMinMax(dataFormat);
+        BST tsRoot = db.getOrDefault(dataFormat.timestamp, null);
+
+        if(tsRoot != null) {
+            tsRoot.insert(dataFormat);
         } else {
-            db.put(dataFormat.timestamp, new DataArr(dataFormat));
+            tsRoot = new BST(dataFormat);
+            db.put(dataFormat.timestamp, tsRoot);
         }
     }
 
-    HashMap<Double, DataArr> getDb() {
+    private void updateMinMax(DataFormat dataFormat) {
+        if (dataFormat.x > this.max_X || this.max_X == 0)
+            this.max_X = dataFormat.x;
+        if (dataFormat.x < this.min_X || this.min_X == 0)
+            this.min_X = dataFormat.x;
+        if (dataFormat.y > this.max_Y || this.max_Y == 0)
+            this.max_Y = dataFormat.y;
+        if (dataFormat.y < this.min_Y || this.min_Y == 0)
+            this.min_Y = dataFormat.y;
+    }
+
+    HashMap<Double, BST> getDb() {
         return db;
     }
 
-    Pair<Double, Double> getVelocityInRange(double timestamp, Pair<Double, Double> range) {
-        DataArr relevantArr = db.get(timestamp);
+    void balanceBST() {
+        for(BST yTree : db.values()) {
+            yTree.balance();
+            yTree.addSumAndMergeLists();
+        }
+    }
+
+
+    /*Pair<Double, Double> getVelocityInRange(double timestamp, Pair<Double, Double> range) {
+
+
+        /*DataArr relevantArr = db.get(timestamp);
         int lowerBoundIndex, upperBoundIndex;
         double avgVelocity;
 
@@ -76,17 +110,48 @@ class Database {
             else
                 avgVelocity = relevantArr.get(upperBoundIndex).sumToIndex / numOfElementsInRange;
         }
-        return new Pair<>(numOfElementsInRange, avgVelocity);
-    }
+        return new Pair<>(numOfElementsInRange, avgVelocity);*/
+        /*return new Pair<>(-1.0,-1.0);
+    }*/
 
-    void addSumToIndexForDb() {
-        DecimalFormat df2 = new DecimalFormat("#.##");
-        for (DataArr dataArr : db.values()) {
-            for (int i = 1; i < dataArr.size(); i++) {
-                dataArr.get(i).sumToIndex += dataArr.get(i - 1).sumToIndex;
-                dataArr.get(i).sumToIndex = (Double.parseDouble(df2.format(dataArr.get(i).sumToIndex)));
+
+    /*
+     * 1. Find first y BST in Y range.
+     * 2. Find indexes of xList that fit to X range
+     * 3. Go through sub xList:
+     *      3.1 if Y in Y range:
+     *          sum Velocity and increment counter
+     * 4. check if couter fits k
+     * 5. return */
+    Pair<Double, Integer> getVelocityInRange(double timestamp, Pair<Pair<Double, Double>, Pair<Double, Double>> ranges) {
+        BST relevantYBst = db.get(timestamp);
+        Pair<Double, Double> yRange = ranges.getP2();
+        Pair<Double, Double> xRange = ranges.getP1();
+
+        Node relevandSubTree = relevantYBst.getRelevantSubTree(yRange);
+        Pair<Integer, Integer> subXListIndexs = getSubXList(xRange, relevandSubTree.xList);
+
+        int counter = 0;
+        double avgVelocity = 0;
+
+        for (int i = subXListIndexs.getP1(); i <= subXListIndexs.getP2(); i++) {
+            if(isInRange(yRange, relevandSubTree.xList.get(i).y)) {
+                counter++;
+                avgVelocity += relevandSubTree.xList.get(i).velocity;
             }
         }
+        return new Pair<>(avgVelocity/counter, counter);
+    }
+
+    Pair<Integer, Integer> getSubXList(Pair<Double, Double> xRange, DataArr dataArr) {
+        Pair<Integer, Integer> result = new Pair<>(-1, -1);
+        result.setP1(dataArr.closestNumber(xRange.getP1(), false));
+        result.setP2(dataArr.closestNumber(xRange.getP2(), true));
+        return result;
+    }
+
+    boolean isInRange(Pair<Double, Double> range, double test){
+        return test <= range.getP2() && test >= range.getP1();
     }
 
 }

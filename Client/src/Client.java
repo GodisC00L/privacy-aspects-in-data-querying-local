@@ -153,7 +153,7 @@ public class Client {
                 }
             }
             attackedFile.write(timestamp + "," + xTarget + ","
-                                + yTarget + "," + velocity + ",," + timeString + "\n");
+                    + yTarget + "," + velocity + ",," + timeString + "\n");
             test++;
             int precent = (test * 100) / numOfTests;
             printProgBar(precent);

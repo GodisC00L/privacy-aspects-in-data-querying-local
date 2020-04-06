@@ -1,4 +1,4 @@
-class DataFormat {
+class DataFormat implements Comparable<DataFormat> {
     int carID;
     double timestamp, x, y, velocity, sumToIndex;
 
@@ -20,5 +20,10 @@ class DataFormat {
                 ", velocity=" + velocity +
                 ", carID=" + carID +
                 '}';
+    }
+
+    @Override
+    public int compareTo(DataFormat dataFormat) {
+        return Double.compare(this.x, dataFormat.x);
     }
 }
