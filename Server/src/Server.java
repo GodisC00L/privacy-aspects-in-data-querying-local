@@ -1,11 +1,4 @@
-import javafx.beans.binding.DoubleExpression;
-
-import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.UnsupportedEncodingException;
-import java.time.Duration;
-import java.time.Instant;
-import java.util.List;
 
 public class Server {
     private WorkingWithDatasets ds;
@@ -47,7 +40,7 @@ public class Server {
         return result;
     }
 
-    public double getAvgVelocity2D(Pair<Pair<Double, Double>, Pair<Double, Double>> area, double timestamp) {
+    public double getAvgVelocity2D(Pair<Pair<Double,Double>, Pair<Double,Double>> area, double timestamp) {
         double result = -1;
         if (!isInRange(area)) {
             return result;
@@ -83,12 +76,14 @@ public class Server {
         this.k = k;
     }
 
+    public int getNumOfVehicles(double timestamp){ return db.getDb().get(timestamp).getNumOfVehicles(); }
+
     public static void main(String[] args) {
         Server srv = new Server();
-        srv.setK(1);
-        Pair<Double, Double> p1 = new Pair<>(1.6, 123121.);
-        Pair<Double, Double> p2 = new Pair<>(1.6, 123121.);
+        Pair<Double, Double> p1 = new Pair<>(17850.753702199796, 12519.408252071784);
+        Pair<Double, Double> p2 = new Pair<>(17850.753702199796, 12519.408252071784);
+        System.out.println(srv.getAvgVelocity2D(new Pair<>(p1, p2), 16196));
 
-        System.out.println(srv.getAvgVelocity2D(new Pair<>(p1, p2),1000));
     }
+
 }

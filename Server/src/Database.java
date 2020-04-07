@@ -18,19 +18,15 @@ class Database {
 
     private double min_Y = 0, max_Y = 0;
 
-    double getMin_X() {
-        return min_X;
-    }
+    double getMin_X() { return min_X; }
 
     double getMax_X() {
         return max_X;
     }
 
-    public double getMin_Y() {
-        return min_Y;
-    }
+    double getMin_Y() { return min_Y; }
 
-    public double getMax_Y() {
+    double getMax_Y() {
         return max_Y;
     }
 
