@@ -10,6 +10,10 @@ public class BST {
         root = null;
     }
 
+    public int getNumOfVehicles(){
+        return this.root.xList.size();
+    }
+
     public BST(DataFormat df){
         root = new Node(df);
     }
