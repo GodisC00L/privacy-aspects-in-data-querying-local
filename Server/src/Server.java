@@ -83,7 +83,5 @@ public class Server {
         Pair<Double, Double> p1 = new Pair<>(17850.753702199796, 12519.408252071784);
         Pair<Double, Double> p2 = new Pair<>(17850.753702199796, 12519.408252071784);
         System.out.println(srv.getAvgVelocity2D(new Pair<>(p1, p2), 16196));
-
     }
-
 }

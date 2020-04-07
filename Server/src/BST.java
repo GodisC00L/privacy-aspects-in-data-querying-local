@@ -5,14 +5,13 @@ import java.util.Vector;
 public class BST {
     private Node root;
     private double maxY, minY;
-    private int NumOfVehicles = 0;
 
     public BST(){
         root = null;
     }
 
     public int getNumOfVehicles(){
-        return this.NumOfVehicles;
+        return this.root.xList.size();
     }
 
     public BST(DataFormat df){
@@ -24,7 +23,6 @@ public class BST {
     }
 
     private Node insert(Node current, DataFormat df){
-        NumOfVehicles++;
         if (current == null) {
             minY = df.y;
             maxY = df.y;
