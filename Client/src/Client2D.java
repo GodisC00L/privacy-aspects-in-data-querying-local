@@ -27,25 +27,21 @@ public class Client2D {
         double xMax = srv.getDb().getMax_X();
         double yMin = srv.getDb().getMin_Y();
         double yMax = srv.getDb().getMax_Y();
+        double yTarget = target.getP2();
+        double xTarget = target.getP1();
 
-        Pair<Double, Double> point1 = new Pair<>(xMin, yMin);
-        Pair<Double, Double> point2 = new Pair<>(xMax, yMax);
-        // Area = ((xMin,yMin),(xMax,yMax))
-        Pair<Pair<Double, Double>, Pair<Double, Double>> area = new Pair<>(point1, point2);
 
         if (k == 1) {
             // Specific target = ((xTarget,yTarget),(xTarget,yTarget))
-            point1.setP1(target.getP1());
-            point1.setP2(target.getP2());
-            return new Pair<>(srv.getAvgVelocity2D(new Pair<>(point1, point1), timestamp), ParticularVehicle);
+            return new Pair<>(srv.getAvgVelocity2D(new Pair<>(target, target), timestamp), ParticularVehicle);
         }
 
         // MidArea = ((xMin,yTarget),(xMax,yTarget))
         // Sm = average velocity of midArea
-        point1.setP2(target.getP2());
-        point2.setP2(target.getP2());
-        Pair<Pair<Double, Double>, Pair<Double, Double>> midArea = new Pair<>(point1, point2);
-        Double Sm = srv.getAvgVelocity2D(midArea, timestamp);
+        Pair<Double, Double> point1 = new Pair<>(xMin, yTarget);
+        Pair<Double, Double> point2 = new Pair<>(xMax, yTarget);
+        Pair<Pair<Double, Double>, Pair<Double, Double>> area = new Pair<>(point1, point2);
+        double Sm = srv.getAvgVelocity2D(area, timestamp);
         if (Sm >= 0){
             //TODO: run 1D Attack search for particular vehicle's speed
             return new Pair<>(Sm, ParticularVehicle);
@@ -53,32 +49,39 @@ public class Client2D {
 
         // TopAreaIncludeMid = ((xMin,yTarget),(xMax,yMax))
         point2.setP2(yMax);
-        Pair<Pair<Double,Double>, Pair<Double,Double>> topAreaIncludeMid = new Pair<>(point1, point2);
+        area = new Pair<>(point1, point2);
+        double St = srv.getAvgVelocity2D(area, timestamp);
 
         // TopArea = ((xMin,yTarget+epsilon),(xMax,yMax))
-        point1.setP2(point2.getP2()+Epsilon);
-        Pair<Pair<Double,Double>, Pair<Double,Double>> topArea = new Pair<>(point1, point2);
+        point1.setP2(yTarget+Epsilon);
+        area = new Pair<>(point1, point2);
+        double St_ = srv.getAvgVelocity2D(area, timestamp);
 
         // BotAreaIncludeMid = ((xMin,yMin),(xMax,yTarget))
         point1.setP2(yMin);
-        point2.setP2(target.getP2());
-        Pair<Pair<Double,Double>, Pair<Double,Double>> botAreaIncludeMid = new Pair<>(point1, point2);
+        point2.setP2(yTarget);
+        area = new Pair<>(point1, point2);
+        double Sb = srv.getAvgVelocity2D(area, timestamp);
 
         // BotArea = ((xMin,yMin),(xMax,yTarget-epsilon))
-        point2.setP2(point2.getP2()-Epsilon);
-        Pair<Pair<Double,Double>, Pair<Double,Double>> botArea = new Pair<>(point1, point2);
+        point2.setP2(yTarget-Epsilon);
+        area = new Pair<>(point1, point2);
+        double Sb_ = srv.getAvgVelocity2D(area, timestamp);
 
+        // Area = ((xMin,yMin),(xMax,yMax))
+        point2.setP2(yMax);
+        area = new Pair<>(point1, point2);
         double Sn = srv.getAvgVelocity2D(area, timestamp);
-        double St = srv.getAvgVelocity2D(topAreaIncludeMid, timestamp);
-        double Sb = srv.getAvgVelocity2D(botAreaIncludeMid, timestamp);
-        double St_ = srv.getAvgVelocity2D(topArea, timestamp);
-        double Sb_ = srv.getAvgVelocity2D(botArea, timestamp);
+
 
         int n = srv.getNumOfVehicles(timestamp);
-        double M = (n*(Sn*(St_+Sb_-St-Sb)+Sb*St-Sb_*St_))/((Sb_-St)*Sb+(St-Sb_)*Sb_);
+
+        double M = (n*(Sn*(St_+Sb_-St-Sb)+Sb*St-Sb_*St_))/((Sb_-St)*(Sb-St_));
+        M = Math.round(M);
         if (M < k) {
             Sm = ((Sb_ * St_ - Sb * St) * Sn + (St - St_) * Sb * Sb_ + (Sb - Sb_) * St * St_) / (Sb * St + (St_ + Sb_ - St - Sb) * Sn - Sb_ * St_);
-            return new Pair<>(Sm, SetOfVehicles);
+            Sm = Math.round(Sm * 100.0) / 100.0;
+            return new Pair<>(Sm, M == 1 ? ParticularVehicle : SetOfVehicles);
         }
         return new Pair<>( -1.0, UnsuccessfulAttack);
     }
