@@ -30,12 +30,11 @@ public class Client2D {
      */
     private static Pair<Double,Integer> singleTargetAttack2D(Server srv, Pair<Double,Double> target, double timestamp) {
         int k = srv.k;
-        double xMin = srv.getDb().getMin_X();
-        double xMax = srv.getDb().getMax_X();
-        double yMin = srv.getDb().getMin_Y();
-        double yMax = srv.getDb().getMax_Y();
+        double xMin = srv.getMin_X();
+        double xMax = srv.getMax_X();
+        double yMin = srv.getMin_Y();
+        double yMax = srv.getMax_Y();
         double yTarget = target.getP2();
-        boolean failFlag = false;
 
         if (k == 1) {
             // Specific target = ((xTarget,yTarget),(xTarget,yTarget))
@@ -94,7 +93,7 @@ public class Client2D {
     }
 
     private static boolean isInRange(Pair<Double, Double> range, Server srv){
-        return  (range.getP1() >= srv.getDb().getMin_X() && range.getP2() <= srv.getDb().getMax_X());
+        return  (range.getP1() >= srv.getMin_X() && range.getP2() <= srv.getMax_X());
     }
 
     /**
@@ -115,7 +114,7 @@ public class Client2D {
 
         }
         // Check if there is a tighter range
-        if(sAvg != -1 || (p2.getP1() > srv.getDb().getMax_X()) || (p1.getP1() < srv.getDb().getMin_X())) {
+        if(sAvg != -1 || (p2.getP1() > srv.getMax_X()) || (p1.getP1() < srv.getMin_X())) {
             if(direction == FORWARD) {
                 p2.setP1(pair.getP1() - 1);
                 pair.setP2(p2.getP1());
@@ -141,8 +140,8 @@ public class Client2D {
     private static double attack1DInner(Server srv, Pair<Double,Double> target, double timestamp,
                                         int direction, double resolution) {
         int k = srv.k;
-        double xMin = srv.getDb().getMin_X();
-        double xMax = srv.getDb().getMax_X();
+        double xMin = srv.getMin_X();
+        double xMax = srv.getMax_X();
 
         double xTarget = target.getP1();
         double yTarget = target.getP2();
@@ -194,7 +193,7 @@ public class Client2D {
     private static Pair<Double, Integer> attack1D(Server srv, Pair<Double,Double> target, double timestamp) {
         double resolution = DEFAULT_RESOLUTION;
         double velocity1;
-        double velocity2 = -1;
+        double velocity2;
 
         velocity1 = attack1DInner(srv, target, timestamp, FORWARD, resolution);
         if (velocity1 < 0)
@@ -216,7 +215,7 @@ public class Client2D {
         return new Pair<>(velocity2, ParticularVehicle);
     }
 
-    private static void attackAllTargets(Server srv, int numOfTests, PrintWriter logFile, int numOfKTest) throws FileNotFoundException {
+    private static void attackAllTargets(Server srv, int numOfTests, int numOfKTest) throws FileNotFoundException {
         String targetListPath = "Client/target.csv";
         FileInputStream inputStream = new FileInputStream(targetListPath);
         String attackedList = "Client/target_attacked_2D.csv";
@@ -283,7 +282,6 @@ public class Client2D {
 
     public static void printProgressBar(int percent){
         StringBuilder bar = new StringBuilder("[");
-
         for(int i = 0; i < 50; i++){
             if( i < (percent/2)){
                 bar.append("=");
@@ -303,7 +301,7 @@ public class Client2D {
         try {
             PrintWriter logFile = new PrintWriter("Client/Target.log");
             long startTime = System.nanoTime();
-            attackAllTargets(srv, numOfTests, logFile, 13);
+            attackAllTargets(srv, numOfTests, 13);
             double attackTime = (System.nanoTime() - startTime) / 1e9;
             logFile.write("\nTotal attack time is: " + attackTime + "[sec]");
             System.out.println("\nTotal attack time is: " + attackTime + "[sec]");
@@ -333,7 +331,6 @@ public class Client2D {
                     break;
                 }
                 case SINGLE_CLIENT_ATTACK: {
-                    srv.setK(defaultK);
                     System.out.println ("Enter X coordinate Y coordinate and timestamp");
                     double targetX = input.nextDouble();
                     double targetY = input.nextDouble();
@@ -360,6 +357,7 @@ public class Client2D {
                 case SET_K: {
                     System.out.println("Input k:");
                     defaultK = input.nextInt();
+                    srv.setK(defaultK);
                     System.out.println("K set to: " + defaultK);
                     break;
                 }

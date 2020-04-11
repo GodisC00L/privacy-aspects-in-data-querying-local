@@ -1,7 +1,6 @@
 import java.util.ArrayList;
 
 public class DataArr extends ArrayList<DataFormat> {
-    private boolean DBG = false;
 
     DataArr(DataFormat dataFormat) {
         this.add(dataFormat);
@@ -36,11 +35,6 @@ public class DataArr extends ArrayList<DataFormat> {
             } else {
                 end = mid;
             }
-        }
-        if (DBG) {
-            System.out.println("Start: " + get(start).x + ", index: " + start
-            + "\nEnd: " + get(end).x + ", index: " + end
-            + "\nTarget: " + target);
         }
         return (target - get(start).x) < (get(end).x - target) ? start : end;
     }
