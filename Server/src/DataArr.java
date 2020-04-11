@@ -1,7 +1,7 @@
 import java.util.ArrayList;
 
 public class DataArr extends ArrayList<DataFormat> {
-    private boolean DBG = true;
+    private boolean DBG = false;
 
     DataArr(DataFormat dataFormat) {
         this.add(dataFormat);
@@ -17,8 +17,12 @@ public class DataArr extends ArrayList<DataFormat> {
         int start = 0;
         int end = size() - 1;
         int mid;
-        if((target < get(start).x) || target > get(end).x)
-            return -1;
+
+        if(target < get(start).x)
+            return start;
+        if(target > get(end).x)
+            return end;
+
         while (start + 1 < end) {
             mid = start + (end - start) / 2;
             if (get(mid).x == target) {

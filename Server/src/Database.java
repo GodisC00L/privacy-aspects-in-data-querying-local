@@ -136,6 +136,8 @@ class Database {
                 avgVelocity += relevandSubTree.xList.get(i).velocity;
             }
         }
+        if(counter == 0)
+            return new Pair<>(-1.0, counter);
         return new Pair<>(avgVelocity/counter, counter);
     }
 

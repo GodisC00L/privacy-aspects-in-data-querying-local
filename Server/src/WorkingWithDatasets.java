@@ -45,7 +45,7 @@ class WorkingWithDatasets {
         DecimalFormat df2 = new DecimalFormat("#.##");
         // Prepare file for writing
         if(targetList != null) {
-            String sb = "Timestamp,X,Y,Velocity,Attack Time for K: [ms]," +
+            String sb = "Timestamp,X,Y,Particular Velocity,Avg Set Velocity,Attack Time for K: [ms]," +
                     "1,2,4,8,16,32,64,128,256,512,1024,2048,4096" + "\n";
             targetList.write(sb);
         }

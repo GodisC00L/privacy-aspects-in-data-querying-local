@@ -46,9 +46,7 @@ public class Server {
             return result;
         }
         Pair<Double, Double> xRange = new Pair<>(area.getP1().getP1(), area.getP2().getP1());
-        if (xRange.getP1() > xRange.getP2()){
-            xRange.swap();
-        }
+
         Pair<Double, Double> yRange = new Pair<>(area.getP1().getP2(), area.getP2().getP2());
         if (yRange.getP1() > yRange.getP2()){
             yRange.swap();
