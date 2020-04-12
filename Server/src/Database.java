@@ -12,23 +12,9 @@ import java.util.HashMap;
 
 class Database {
     private HashMap<Double, BST> db;
-    private final boolean DBG = false;
 
-    private double min_X = 0, max_X = 0;
-
-    private double min_Y = 0, max_Y = 0;
-
-    double getMin_X() { return min_X; }
-
-    double getMax_X() {
-        return max_X;
-    }
-
-    double getMin_Y() { return min_Y; }
-
-    double getMax_Y() {
-        return max_Y;
-    }
+    double min_X = 0, max_X = 0;
+    double min_Y = 0, max_Y = 0;
 
     Database() {
         this.db = new HashMap<>();
@@ -67,49 +53,6 @@ class Database {
             yTree.addSumAndMergeLists();
         }
     }
-
-
-    /*Pair<Double, Double> getVelocityInRange(double timestamp, Pair<Double, Double> range) {
-
-
-        /*DataArr relevantArr = db.get(timestamp);
-        int lowerBoundIndex, upperBoundIndex;
-        double avgVelocity;
-
-        if (relevantArr == null) {
-            System.out.println("No arr for timestamp: " + timestamp + " range: " + range.toString());
-            return null;
-        }
-
-        if(range.getP1() == this.min_X) lowerBoundIndex = 0;
-        else lowerBoundIndex = relevantArr.closestNumber(range.getP1(), false);
-        if (lowerBoundIndex == -1) {
-            if (DBG)
-                System.out.println("No index for lowerBound: " + range.getP1());
-            return null;
-        }
-
-        if(range.getP2() == this.max_X) upperBoundIndex = relevantArr.size()-1;
-        else upperBoundIndex = relevantArr.closestNumber(range.getP2(), true);
-        if (upperBoundIndex == -1) {
-            if(DBG)
-                System.out.println("No index for upperBound: " + range.getP2());
-            return null;
-        }
-
-        double numOfElementsInRange = upperBoundIndex - lowerBoundIndex + 1;
-        if(numOfElementsInRange == 1) avgVelocity = relevantArr.get(upperBoundIndex).velocity;
-        else {
-            if (lowerBoundIndex != 0)
-                avgVelocity = (relevantArr.get(upperBoundIndex).sumToIndex -
-                        relevantArr.get(lowerBoundIndex - 1).sumToIndex) / numOfElementsInRange;
-            else
-                avgVelocity = relevantArr.get(upperBoundIndex).sumToIndex / numOfElementsInRange;
-        }
-        return new Pair<>(numOfElementsInRange, avgVelocity);*/
-        /*return new Pair<>(-1.0,-1.0);
-    }*/
-
 
     /*
      * 1. Find first y BST in Y range.

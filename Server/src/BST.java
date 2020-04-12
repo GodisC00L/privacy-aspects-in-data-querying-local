@@ -6,10 +6,6 @@ public class BST {
     private Node root;
     private double maxY, minY;
 
-    public BST(){
-        root = null;
-    }
-
     public int getNumOfVehicles(){
         return this.root.xList.size();
     }
@@ -75,7 +71,7 @@ public class BST {
     // a balanced BST
     Node buildTree(Node root) {
         // Store nodes of given BST in sorted order
-        Vector<Node> nodes = new Vector<Node>();
+        Vector<Node> nodes = new Vector<>();
         storeBSTNodes(root, nodes);
 
         // Constucts BST from nodes[]

@@ -1,23 +1,22 @@
 import java.io.IOException;
 
 public class Server {
-    private WorkingWithDatasets ds;
     private Database db;
-    private final String targetListPath = "Server/fixedVelocities_40_MB_target.csv";
-
-    private final String path = "Server/fixedVelocities_40_MB.txt";
     public int k = 10;
     //private final String path = "/home/user/Downloads/koln.tr";
 
     public Server() {
         try {
-            ds = new WorkingWithDatasets(path, targetListPath);
+            String targetListPath = "Server/fixedVelocities_40_MB_target.csv";
+            String path = "Server/fixedVelocities_40_MB.txt";
+            WorkingWithDatasets ds = new WorkingWithDatasets(path, targetListPath);
             long startTime = System.nanoTime();
             db = ds.getDB();
             double dbBuildTime = (System.nanoTime() - startTime) / 1e9;
             System.out.println("================================" +
                     "\nDB created Successfully!\nK value is: " + k
-                    + "\nMin X: " + db.getMin_X() + "\nMax X: " + db.getMax_X()
+                    + "\nMin X: " + db.min_X + "\nMax X: " + db.max_X
+                    + "\nMin y: " + db.min_Y + "\nMax y: " + db.max_Y
                     + "\nBuild time: " + dbBuildTime + "[sec]\n"
                     + "================================\n");
         } catch (IOException e) {
@@ -26,18 +25,16 @@ public class Server {
         }
     }
 
-    public Database getDb() {
-        return db;
+    double getMin_X() { return db.min_X; }
+
+    double getMax_X() {
+        return db.max_X;
     }
 
-    public double getAvgVelocity(Pair<Double, Double> range, double timestamp) {
-        double result = -1;
-        if(range.getP1() < db.getMin_X() || range.getP2() > db.getMax_X())
-            return result;
-        //Pair<Double, Double> kVelocityPair = db.getVelocityInRange(timestamp, range);
-        /*if(kVelocityPair != null && kVelocityPair.getP1() >= this.k)
-            result =  kVelocityPair.getP2();*/
-        return result;
+    double getMin_Y() { return db.min_Y; }
+
+    double getMax_Y() {
+        return db.max_Y;
     }
 
     public double getAvgVelocity2D(Pair<Pair<Double,Double>, Pair<Double,Double>> area, double timestamp) {
@@ -63,11 +60,11 @@ public class Server {
     }
 
     boolean isInRangeX(double x) {
-        return x <= db.getMax_X() && x >= db.getMin_X();
+        return x <= db.max_X && x >= db.min_X;
     }
 
     boolean isInRangeY(double y) {
-        return y <= db.getMax_Y() && y >= db.getMin_Y();
+        return y <= db.max_Y && y >= db.min_Y;
     }
 
     public void setK(int k) {
