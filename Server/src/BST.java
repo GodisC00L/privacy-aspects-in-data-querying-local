@@ -6,6 +6,10 @@ public class BST {
     private Node root;
     private double maxY, minY;
 
+    public Node getRoot() {
+        return root;
+    }
+
     public int getNumOfVehicles(){
         return this.root.xList.size();
     }

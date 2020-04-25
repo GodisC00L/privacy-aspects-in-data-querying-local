@@ -1,17 +1,19 @@
+import java.io.File;
 import java.io.IOException;
 
 public class Server {
     private Database db;
     public int k = 10;
-    //private final String path = "/home/user/Downloads/koln.tr";
+    //private final String path = "Server/koln.tr";
 
     public Server() {
         try {
             String targetListPath = "Server/fixedVelocities_40_MB_target.csv";
-            String path = "Server/fixedVelocities_40_MB.txt";
+            //String path = "Server/fixedVelocities_40_MB.txt";
+            File path = new File("Server/fixedVelocities_40_MB.txt");
             WorkingWithDatasets ds = new WorkingWithDatasets(path, targetListPath);
             long startTime = System.nanoTime();
-            db = ds.getDB();
+            db = ds.getDB(path.length());
             double dbBuildTime = (System.nanoTime() - startTime) / 1e9;
             System.out.println("================================" +
                     "\nDB created Successfully!\nK value is: " + k
@@ -54,6 +56,14 @@ public class Server {
         return result;
     }
 
+    public double getMaxVel(double timestamp, Pair<Double, Double> xRange) {
+        double ret = -1;
+        if(!isInRangeX(xRange.getP1()) || !isInRangeX(xRange.getP2())) {
+            return ret;
+        }
+        return db.getMaxVel(timestamp, xRange);
+    }
+
     boolean isInRange(Pair<Pair<Double, Double>, Pair<Double, Double>> area) {
         return isInRangeX(area.getP1().getP1()) && isInRangeY(area.getP1().getP2())
                 && isInRangeX(area.getP2().getP1()) && isInRangeY(area.getP2().getP2());
@@ -75,8 +85,5 @@ public class Server {
 
     public static void main(String[] args) {
         Server srv = new Server();
-        Pair<Double, Double> p1 = new Pair<>(17850.753702199796, 12519.408252071784);
-        Pair<Double, Double> p2 = new Pair<>(17850.753702199796, 12519.408252071784);
-        System.out.println(srv.getAvgVelocity2D(new Pair<>(p1, p2), 16196));
     }
 }
