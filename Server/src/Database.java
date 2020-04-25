@@ -173,6 +173,28 @@ class Database {
         return maxVelocity;
     }
 
+
+    /**
+     * Finds and return the minimum velocity in a given range
+     * @param timestamp
+     * @param xRange
+     * @return maxVelocity
+     */
+    public double getMinVel(double timestamp, Pair<Double, Double> xRange) {
+        BST relevantTree = db.get(timestamp);
+        DataArr xList = relevantTree.getRoot().xList;
+        Pair<Integer, Integer> relevantIndexes = getSubXList(xRange, xList);
+        double minVelocity = -1;
+
+        for(int i = relevantIndexes.getP1(); i <= relevantIndexes.getP2(); i++) {
+            if(xList.get(i).velocity < minVelocity) {
+                minVelocity = xList.get(i).velocity;
+            }
+        }
+        return minVelocity;
+    }
+
+
     public static void printProgressBar(int percent){
         StringBuilder bar = new StringBuilder("[");
         for(int i = 0; i < 50; i++){

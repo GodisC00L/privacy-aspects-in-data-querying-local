@@ -64,6 +64,14 @@ public class Server {
         return db.getMaxVel(timestamp, xRange);
     }
 
+    public double getMinVel(double timestamp, Pair<Double, Double> xRange) {
+        double ret = -1;
+        if(!isInRangeX(xRange.getP1()) || !isInRangeX(xRange.getP2())) {
+            return ret;
+        }
+        return db.getMinVel(timestamp, xRange);
+    }
+
     boolean isInRange(Pair<Pair<Double, Double>, Pair<Double, Double>> area) {
         return isInRangeX(area.getP1().getP1()) && isInRangeY(area.getP1().getP2())
                 && isInRangeX(area.getP2().getP1()) && isInRangeY(area.getP2().getP2());
