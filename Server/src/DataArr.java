@@ -1,7 +1,22 @@
+/*
+ * Copyright (c) 2020.
+ * Created by Edan Shamai and Natanel Ziv
+ * Based on the work of Mr. Eyal Nussbaum and Prof. Michael Segal
+ *
+ */
+
 import java.util.ArrayList;
 
+/**
+ * Extends ArrayList functionality for
+ * @see DataFormat Objects
+ */
 public class DataArr extends ArrayList<DataFormat> {
-
+     /**
+      * Adds DataFormat object to the array
+      *
+      * @param dataFormat - DataFormat object
+      */
     DataArr(DataFormat dataFormat) {
         this.add(dataFormat);
     }
@@ -9,7 +24,10 @@ public class DataArr extends ArrayList<DataFormat> {
     /**
      * Find the index of the closest lower value to target for upper bound
      * and index of the closest highest value to target for lower bound
-     * @param: double target, boolean upper
+     * This is a binary search - time complexity O(log(n)), where n is size of array
+     *
+     * @param target - x we wish to find in array
+     * @param upper - indicates if to return the lower or upper number
      * @return index of closest lower value
      */
     public int closestNumber(double target, boolean upper) {
@@ -38,7 +56,6 @@ public class DataArr extends ArrayList<DataFormat> {
         }
         return (target - get(start).x) < (get(end).x - target) ? start : end;
     }
-
 }
 
 

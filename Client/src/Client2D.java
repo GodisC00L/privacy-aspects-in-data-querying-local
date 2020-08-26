@@ -1,6 +1,6 @@
-import java.io.FileInputStream;
-import java.io.FileNotFoundException;
-import java.io.PrintWriter;
+import java.io.*;
+import java.nio.charset.StandardCharsets;
+import java.text.DecimalFormat;
 import java.util.Scanner;
 
 public class Client2D {
@@ -13,6 +13,7 @@ public class Client2D {
     private static final int FULL_CLIENT_ATTACK     = 1;
     private static final int SINGLE_CLIENT_ATTACK   = 2;
     private static final int SET_K                  = 3;
+    private static final int VALIDATE               = 4;
     private static final int EXIT                   = -1;
 
     private static final int FORWARD                = 1;
@@ -216,9 +217,9 @@ public class Client2D {
     }
 
     private static void attackAllTargets(Server srv, int numOfTests, int numOfKTest) throws FileNotFoundException {
-        String targetListPath = "Client/target.csv";
+        String targetListPath = "Client/target_1GB.csv";
         FileInputStream inputStream = new FileInputStream(targetListPath);
-        String attackedList = "Client/target_attacked_2D.csv";
+        String attackedList = "Client/target_attacked_2D_1GB_Extra.csv";
         PrintWriter attackedFile = new PrintWriter(attackedList);
         Scanner scanner = new Scanner(inputStream);
         String[] splitted;
@@ -241,7 +242,7 @@ public class Client2D {
             yTarget = Double.parseDouble(splitted[2]);
             Pair<Double, Double> target = new Pair<>();
 
-            for(int i = 0, j = 1; i < numOfKTest && !failFlag; i++, j<<=1) {
+            for(int i = 0, j = 8192; i < numOfKTest && !failFlag; i++, j<<=1) {
                 Pair<Double, Integer> ans;
                 int resultType;
                 srv.setK(j);
@@ -295,13 +296,15 @@ public class Client2D {
 
         bar.append("]   ").append(percent).append("%     ");
         System.out.print("\r" + bar.toString());
+        if (percent == 100)
+            System.out.println('\n');
     }
 
     private static void runAttack(int numOfTests, Server srv) {
         try {
             PrintWriter logFile = new PrintWriter("Client/Target.log");
             long startTime = System.nanoTime();
-            attackAllTargets(srv, numOfTests, 13);
+            attackAllTargets(srv, numOfTests, 4);
             double attackTime = (System.nanoTime() - startTime) / 1e9;
             logFile.write("\nTotal attack time is: " + attackTime + "[sec]");
             System.out.println("\nTotal attack time is: " + attackTime + "[sec]");
@@ -309,6 +312,45 @@ public class Client2D {
         } catch (FileNotFoundException e) {
             e.printStackTrace();
         }
+    }
+
+    private static void validateAttack() throws FileNotFoundException {
+        File attackedFile_file = new File("Client/target_attacked_2D.csv");
+        FileInputStream attackedFile = new FileInputStream(attackedFile_file);
+        FileInputStream originalFile = new FileInputStream("Server/fixedVelocities_40_MB.txt");
+        PrintWriter logFile = new PrintWriter("Client/validation.log");
+
+        Scanner attackedScanner = new Scanner(attackedFile);
+        Scanner originalScanner = new Scanner(originalFile);
+
+        String attackLine;
+        attackedScanner.nextLine();
+        String originalLine;
+        long size = attackedFile_file.length();
+        long total = 0;
+        while (attackedScanner.hasNextLine()) {
+            attackLine = attackedScanner.nextLine();
+            total += attackLine.getBytes(StandardCharsets.UTF_8).length;
+            originalLine = originalScanner.nextLine();
+            double attackedVelocity = getVelocity(attackLine, ",", 3);
+            double originalVelocity = getVelocity(originalLine, " ", 4);
+
+            if(Math.abs(attackedVelocity-originalVelocity) > 0.05) {
+                logFile.write("=========== Error ===========\n" +
+                        originalLine + '\n' + attackLine +
+                        "=============================\n");
+            }
+
+            int precent = (int)((total * 100)/ size);
+            printProgressBar(precent);
+        }
+
+    }
+
+    private static double getVelocity(String line, String delimiter, int index) {
+        DecimalFormat df2 = new DecimalFormat("#.##");
+        String velocityString = line.split(delimiter)[index];
+        return Double.parseDouble(df2.format(Double.parseDouble(velocityString)));
     }
 
     public static void main(String[] args) {
@@ -320,6 +362,7 @@ public class Client2D {
             System.out.println("1. Full Target attack\n" +
                     "2. Single target attack\n" +
                     "3. Set K\n" +
+                    "4. Validate\n" +
                     "-1 Exit");
             Scanner input = new Scanner(System.in);
 
@@ -364,6 +407,14 @@ public class Client2D {
                 case EXIT: {
                     System.out.println("GoodBye! :D");
                     running = false;
+                    break;
+                }
+                case VALIDATE: {
+                    try {
+                        validateAttack();
+                    } catch (FileNotFoundException e) {
+                        e.printStackTrace();
+                    }
                     break;
                 }
                 default: {

@@ -24,33 +24,38 @@ class WorkingWithDatasets {
     private PrintWriter targetList = null;
 
     /* Constructor for class */
-    WorkingWithDatasets(String path, String targetPath) throws FileNotFoundException {
+    WorkingWithDatasets(File path, String targetPath) throws FileNotFoundException {
         FileInputStream inputStream = new FileInputStream(path);
         if(!(new File(targetPath).exists())) {
             targetList = new PrintWriter(targetPath);
         }
         datasetScanner = new Scanner(inputStream);
-        //randomVelocities_andCutSize(40);
+        //randomVelocities_andCutSize(1000);
     }
 
-    Database getDB() {
+    Database getDB(long size) {
         if (this.db.getDb().isEmpty())
-            this.db = createDB();
+            this.db = createDB(size);
         return db;
     }
 
-    private Database createDB() {
+    private Database createDB(long size) {
         String[] splitted;
         DataFormat df;
         DecimalFormat df2 = new DecimalFormat("#.##");
+        long total = 0;
+
         // Prepare file for writing
         if(targetList != null) {
             String sb = "Timestamp,X,Y,Particular Velocity,Avg Set Velocity,Attack Time for K: [ms]," +
                     "1,2,4,8,16,32,64,128,256,512,1024,2048,4096" + "\n";
             targetList.write(sb);
         }
+        System.out.println("\nBuilding DB");
         while(datasetScanner.hasNextLine()) {
-            splitted = datasetScanner.nextLine().split(" ");
+            String data = datasetScanner.nextLine();
+            total += data.getBytes(StandardCharsets.UTF_8).length;
+            splitted = data.split(" ");
             df = new DataFormat(Double.parseDouble(splitted[0]),
                     Integer.parseInt(splitted[1].contains("_") ? splitted[1].substring(13) : splitted[1]),
                     Double.parseDouble(splitted[2]),
@@ -60,6 +65,9 @@ class WorkingWithDatasets {
             db.addToDB(df);
             if(targetList != null)
                 writeToTargetList(df);
+
+            int precent = (int)((total * 100)/ size);
+            printProgressBar(precent);
         }
         datasetScanner.close();
         if(targetList != null)
@@ -80,9 +88,15 @@ class WorkingWithDatasets {
         long total=0;
         PrintWriter writer = new PrintWriter("Server/fixedVelocities_" + size + "_MB.txt");
         //PrintWriter writer = new PrintWriter("D:/fixedVelocities.txt");
-        for (int i = 0; i < 750000; i++) {
+        System.out.println("Jumping 3500000 lines");
+
+        for (int i = 0; i < 3500000; i++) {
             datasetScanner.nextLine();
+            int precent = (i) / 35000;
+            printProgressBar(precent);
         }
+
+        System.out.println("\nWrite File");
         while(datasetScanner.hasNextLine() && bytesToMeg(total) <= size) {
             //rand = ThreadLocalRandom.current().nextDouble(0, 30);
             inputLine = datasetScanner.nextLine();
@@ -92,8 +106,28 @@ class WorkingWithDatasets {
             //total += outputLine.getBytes(StandardCharsets.UTF_8).length;
             total += inputLine.getBytes(StandardCharsets.UTF_8).length;
             writer.println(inputLine);
+
+            int precent = (int)((bytesToMeg(total) * 100) / size);
+            printProgressBar(precent);
         }
         writer.close();
+    }
+
+    public static void printProgressBar(int percent){
+        StringBuilder bar = new StringBuilder("[");
+        for(int i = 0; i < 50; i++){
+            if( i < (percent/2)){
+                bar.append("=");
+            } else if( i == (percent/2)) {
+                bar.append(">");
+            } else {
+                bar.append(" ");
+            }
+        }
+
+
+        bar.append("]   ").append(percent).append("%     ");
+        System.out.print("\r" + bar.toString());
     }
 
     private static final long  MEGABYTE = 1024L * 1024L;
