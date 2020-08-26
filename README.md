@@ -1,4 +1,6 @@
-# Run
+# privacy-aspects-in-data-querying-local
+
+## Running Instructions
 
 ### Input Files
 In order to run our program you should have 2 files:
