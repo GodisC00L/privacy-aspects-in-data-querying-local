@@ -14,6 +14,7 @@ public class Client2D {
     private static final int SINGLE_CLIENT_ATTACK   = 2;
     private static final int SET_K                  = 3;
     private static final int VALIDATE               = 4;
+    private static final int LOAD_DATASET           = 5;
     private static final int EXIT                   = -1;
 
     private static final int FORWARD                = 1;
@@ -200,6 +201,8 @@ public class Client2D {
         if (velocity1 < 0)
             velocity1 = attack1DInner(srv, target, timestamp, BACKWARD, resolution);
 
+        if(velocity1 < 0 ) return new Pair<>(velocity1, UnsuccessfulAttack);
+
         do {
             resolution = resolution / 10;
             velocity2 = attack1DInner(srv, target, timestamp, FORWARD, resolution);
@@ -354,8 +357,8 @@ public class Client2D {
     }
 
     public static void main(String[] args) {
-        Server srv = new Server();
-        int defaultK = srv.k;
+        Server srv = null;
+        int defaultK = 1;
 
         boolean running = true;
         while (running) {
@@ -363,17 +366,44 @@ public class Client2D {
                     "2. Single target attack\n" +
                     "3. Set K\n" +
                     "4. Validate\n" +
+                    "5. Load Dataset\n" +
                     "-1 Exit");
             Scanner input = new Scanner(System.in);
 
             int clientAns = input.nextInt();
+            input.nextLine();
             switch(clientAns) {
+                case LOAD_DATASET: {
+                    System.out.println("Please enter datasetName located in Server/");
+                    String fileName =  input.nextLine();
+                    String pathToDataset = "Server/" + fileName;
+                    File path = new File(pathToDataset);
+                    if(path.exists()) {
+                        if(srv != null) { //case we have a server loaded already
+                            srv = null;
+                        }
+                        srv = new Server(path);
+                        defaultK = srv.k;
+                    } else {
+                        System.out.println("Such path doesnt exist");
+                    }
+                    break;
+                }
                 case FULL_CLIENT_ATTACK: {
+                    if(srv == null) {
+                        System.out.println("Please load server");
+                        break;
+                    }
                     System.out.println("How many runs?");
                     runAttack(input.nextInt(), srv);
                     break;
                 }
                 case SINGLE_CLIENT_ATTACK: {
+                    if(srv == null) {
+                        System.out.println("Please load server");
+                        break;
+                    }
+
                     System.out.println ("Enter X coordinate Y coordinate and timestamp");
                     double targetX = input.nextDouble();
                     double targetY = input.nextDouble();
@@ -398,6 +428,10 @@ public class Client2D {
                     break;
                 }
                 case SET_K: {
+                    if(srv == null) {
+                        System.out.println("Please load server");
+                        break;
+                    }
                     System.out.println("Input k:");
                     defaultK = input.nextInt();
                     srv.setK(defaultK);

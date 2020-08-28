@@ -30,7 +30,7 @@ class WorkingWithDatasets {
             targetList = new PrintWriter(targetPath);
         }
         datasetScanner = new Scanner(inputStream);
-        //randomVelocities_andCutSize(1000);
+        //randomVelocities_andCutSize(125);
     }
 
     Database getDB(long size) {
@@ -92,7 +92,7 @@ class WorkingWithDatasets {
 
         for (int i = 0; i < 3500000; i++) {
             datasetScanner.nextLine();
-            int precent = (i) / 35000;
+            int precent = i / 3500000;
             printProgressBar(precent);
         }
 

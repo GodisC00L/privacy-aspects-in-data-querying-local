@@ -4,13 +4,11 @@ import java.io.IOException;
 public class Server {
     private Database db;
     public int k = 10;
-    //private final String path = "Server/koln.tr";
 
-    public Server() {
+    public Server(File path) {
         try {
-            String targetListPath = "Server/fixedVelocities_40_MB_target.csv";
-            //String path = "Server/fixedVelocities_40_MB.txt";
-            File path = new File("Server/fixedVelocities_40_MB.txt");
+            String fileName = path.getName().substring(0, path.getName().lastIndexOf('.'));
+            String targetListPath = "Server/" + fileName + "_target.csv";
             WorkingWithDatasets ds = new WorkingWithDatasets(path, targetListPath);
             long startTime = System.nanoTime();
             db = ds.getDB(path.length());
@@ -91,7 +89,4 @@ public class Server {
 
     public int getNumOfVehicles(double timestamp){ return db.getDb().get(timestamp).getNumOfVehicles(); }
 
-    public static void main(String[] args) {
-        Server srv = new Server();
-    }
 }
